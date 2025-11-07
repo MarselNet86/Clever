@@ -1,0 +1,147 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-green-dark to-brand-green p-4">
+    <div class="w-full max-w-md">
+        <!-- Карточка формы -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8">
+            <!-- Заголовок -->
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-brand-green-dark mb-2">Clever</h2>
+                <p class="text-gray-600">Создайте новый аккаунт</p>
+            </div>
+
+            <!-- Форма -->
+            <form method="post" class="space-y-5">
+                {% csrf_token %}
+
+                <!-- Имя пользователя -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700">Имя пользователя</span>
+                    </label>
+                    <input type="text" name="username" placeholder="Введите имя пользователя"
+                        class="input input-bordered w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                        required />
+                    {% if form.username.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.username.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <!-- Email -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700">Email</span>
+                    </label>
+                    <input type="email" name="email" placeholder="example@email.com"
+                        class="input input-bordered w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                        required />
+                    {% if form.email.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.email.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <!-- Пароль -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700">Пароль</span>
+                    </label>
+                    <input type="password" name="password" placeholder="Введите пароль"
+                        class="input input-bordered w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                        required />
+                    {% if form.password.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.password.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <!-- Роль -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700">Роль</span>
+                    </label>
+                    <select name="role" id="roleSelect"
+                        class="select select-bordered w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                        required>
+                        <option value="">Выберите роль</option>
+                        {% for value, label in form.role.field.choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    {% if form.role.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.role.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <!-- Группа (только для студентов) -->
+                <div class="form-control hidden" id="groupContainer">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700">Группа</span>
+                    </label>
+                    <input type="text" name="group" id="groupInput" placeholder="Введите название группы"
+                        class="input input-bordered w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2" />
+                    {% if form.group.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.group.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <!-- Общие ошибки формы -->
+                {% if form.non_field_errors %}
+                <div class="alert alert-error">
+                    {{ form.non_field_errors.0 }}
+                </div>
+                {% endif %}
+
+                <!-- Кнопка отправки -->
+                <div class="form-control mt-6">
+                    <button type="submit"
+                        class="btn w-full text-white border-none hover:bg-brand-green-hover transition-colors"
+                        style="background-color: #1B7D4A;">
+                        Зарегистрироваться
+                    </button>
+                </div>
+            </form>
+
+            <!-- Ссылка на вход -->
+            <div class="text-center mt-6">
+                <p class="text-gray-600">
+                    Уже есть аккаунт?
+                    <a href="{% url 'main:login' %}" class="font-medium hover:underline" style="color: #1B7D4A;">
+                        Войти
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Показывать/скрывать поле "Группа" в зависимости от выбранной роли
+    document.getElementById('roleSelect').addEventListener('change', function () {
+        const groupContainer = document.getElementById('groupContainer');
+        const groupInput = document.getElementById('groupInput');
+
+        // Предполагаем, что значение для студента - 'student' или 'ST'
+        // Измените на актуальное значение из вашей модели UserProfile.ROLE_CHOICES
+        if (this.value === 'student' || this.value === 'ST') {
+            groupContainer.classList.remove('hidden');
+            groupInput.required = true;
+        } else {
+            groupContainer.classList.add('hidden');
+            groupInput.required = false;
+            groupInput.value = ''; // Очищаем поле при скрытии
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-green-dark to-brand-green p-4">
+    <div class="w-full max-w-md">
+        <!-- Карточка формы -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8">
+            <!-- Заголовок -->
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-brand-green-dark mb-2">Clever</h2>
+                <p class="text-gray-600">Войдите в свой аккаунт</p>
+            </div>
+
+            <!-- Форма -->
+            <form method="post" class="space-y-5">
+                {% csrf_token %}
+
+                <!-- Имя пользователя -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700">Имя пользователя</span>
+                    </label>
+                    <input type="text" name="username" placeholder="Введите имя пользователя"
+                        class="input input-bordered w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                        required />
+                    {% if form.username.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.username.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <!-- Пароль -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700">Пароль</span>
+                    </label>
+                    <input type="password" name="password" placeholder="Введите пароль"
+                        class="input input-bordered w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                        required />
+                    {% if form.password.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.password.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <!-- Ошибка входа -->
+                {% if error %}
+                <div class="alert alert-error shadow-lg">
+                    <div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>{{ error }}</span>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Общие ошибки формы -->
+                {% if form.non_field_errors %}
+                <div class="alert alert-error shadow-lg">
+                    <div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>{{ form.non_field_errors.0 }}</span>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Кнопка отправки -->
+                <div class="form-control mt-6">
+                    <button type="submit"
+                        class="btn w-full text-white border-none hover:bg-brand-green-hover transition-colors"
+                        style="background-color: #1B7D4A;">
+                        Войти
+                    </button>
+                </div>
+            </form>
+
+            <!-- Ссылка на регистрацию -->
+            <div class="text-center mt-6">
+                <p class="text-gray-600">
+                    Нет аккаунта?
+                    <a href="{% url 'main:register' %}" class="font-medium hover:underline" style="color: #1B7D4A;">
+                        Зарегистрироваться
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

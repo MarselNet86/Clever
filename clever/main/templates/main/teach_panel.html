@@ -1,0 +1,404 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Панель преподавателя{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-brand-green-container">
+    <!-- Хедер -->
+    <div class="bg-brand-green-dark text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold">Clever - Панель преподавателя</h1>
+                <div class="flex items-center gap-4">
+                    <span class="text-brand-green-container font-medium">{{ request.user.username }}</span>
+                    <a href="{% url 'main:logout' %}"
+                        class="btn btn-sm bg-white hover:bg-gray-100 border-none text-brand-green-dark">
+                        Выход
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Табы -->
+        <div class="bg-white rounded-2xl shadow-xl mb-6 p-2">
+            <div class="flex gap-2">
+                <button
+                    class="tab-button flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-200 bg-brand-green text-white"
+                    id="createTestTab">
+                    Создание работы
+                </button>
+                <button
+                    class="tab-button flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-200 bg-gray-100 text-gray-600"
+                    id="createGroupTab">
+                    Создание группы
+                </button>
+                <button
+                    class="tab-button flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-200 bg-gray-100 text-gray-600"
+                    id="resultsTab">
+                    Результаты
+                </button>
+            </div>
+        </div>
+
+        <!-- Контент: Создание теста -->
+        <div id="createTestContent">
+            <form id="testForm" method="post" action="{% url 'main:create_test' %}" enctype="multipart/form-data">
+
+                {% csrf_token %}
+
+                <div class="flex gap-6">
+                    <!-- Левая часть: Вопросы -->
+                    <div class="flex-1">
+                        <div class="bg-white rounded-2xl shadow-xl p-8">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-2xl font-bold text-brand-green-dark">Вопросы</h2>
+                                <button type="button" id="addQuestionBtn"
+                                    class="btn bg-brand-green rounded-xl hover:bg-brand-green-hover text-white border-none p-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Добавить вопрос
+                                </button>
+                            </div>
+
+                            <!-- Контейнер для вопросов -->
+                            <div id="questionsContainer" class="space-y-6">
+                                <!-- Вопросы будут добавляться сюда динамически -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Правая часть: Фиксированная панель настроек -->
+                    <div class="w-96">
+                        <div class="bg-white rounded-2xl shadow-xl p-6 sticky top-8">
+                            <h2 class="text-xl font-bold text-brand-green-dark mb-6">Настройки теста</h2>
+
+                            <!-- Название теста -->
+                            <div class="form-control mb-4">
+                                <label class="label">
+                                    <span class="label-text font-medium text-gray-700">Название теста</span>
+                                </label>
+                                <input type="text" name="test_title" placeholder="Введите название"
+                                    class="input input-bordered w-full rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                                    required />
+                            </div>
+
+                            <!-- Описание теста -->
+                            <div class="form-control mb-4">
+                                <label class="label">
+                                    <span class="label-text font-medium text-gray-700">Описание</span>
+                                </label>
+                                <textarea name="test_description" placeholder="Краткое описание"
+                                    class="textarea textarea-bordered w-full rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                                    rows="3"></textarea>
+                            </div>
+
+                            <!-- Выбор группы -->
+                            <div class="form-control mb-6">
+                                <label class="label">
+                                    <span class="label-text font-medium text-gray-700">Группа</span>
+                                </label>
+                                <select name="group_id"
+                                    class="select select-bordered w-full rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                                    required>
+                                    <option value="">Выберите группу</option>
+                                    {% for g in groups %}
+                                    <option value="{{ g.id }}">{{ g.name }}</option>
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+                            <!-- Кнопка создания теста -->
+                            <button type="submit"
+                                class="btn bg-brand-green rounded-xl hover:bg-brand-green-hover text-white border-none w-full text-lg">
+                                Создать тест
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Контент: Создание группы -->
+        <div id="createGroupContent" class="bg-white rounded-2xl shadow-xl p-8 hidden">
+            <h2 class="text-2xl font-bold text-brand-green-dark mb-6">Создание группы</h2>
+
+            <form method="post" action="{% url 'main:create_group' %}">
+                {% csrf_token %}
+                <div class="form-control mb-4">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700">Название группы</span>
+                    </label>
+                    <input type="text" name="group_name" class="input input-bordered w-full rounded-xl p-2" required>
+                </div>
+                <button type="submit"
+                    class="btn bg-brand-green rounded-xl hover:bg-brand-green-hover text-white border-none w-full text-lg">
+                    Создать группу
+                </button>
+            </form>
+        </div>
+
+
+        <!-- Контент: Результаты (скрыт по умолчанию) -->
+        <div id="resultsContent" class="bg-white rounded-2xl shadow-xl p-8 hidden">
+            <h2 class="text-2xl font-bold text-brand-green-dark mb-6">Результаты тестов</h2>
+            <p class="text-gray-600">Здесь будут отображаться результаты выполненных тестов</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let questionCounter = 0;
+    let deletedQuestions = new Set();
+
+    // --- универсальное переключение табов ---
+    function activateTab(tabId) {
+        // 1) сбрасываем состояние всем кнопкам
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('bg-brand-green', 'text-white');
+            btn.classList.add('bg-gray-100', 'text-gray-600');
+        });
+
+        // 2) подсвечиваем активную
+        const activeBtn = document.getElementById(tabId);
+        activeBtn.classList.add('bg-brand-green', 'text-white');
+        activeBtn.classList.remove('bg-gray-100', 'text-gray-600');
+
+        // 3) открываем соответствующий блок
+        document.getElementById('createTestContent').classList.add('hidden');
+        document.getElementById('createGroupContent').classList.add('hidden');
+        document.getElementById('resultsContent').classList.add('hidden');
+
+        if (tabId === 'createTestTab') {
+            document.getElementById('createTestContent').classList.remove('hidden');
+        }
+        if (tabId === 'createGroupTab') {
+            document.getElementById('createGroupContent').classList.remove('hidden');
+        }
+        if (tabId === 'resultsTab') {
+            document.getElementById('resultsContent').classList.remove('hidden');
+        }
+    }
+
+    // назначаем обработчики
+    document.getElementById('createTestTab').onclick = () => activateTab('createTestTab');
+    document.getElementById('createGroupTab').onclick = () => activateTab('createGroupTab');
+    document.getElementById('resultsTab').onclick = () => activateTab('resultsTab');
+
+
+    // Функция для пересчета номеров вопросов
+    function renumberQuestions() {
+        const questions = document.querySelectorAll('.question-block');
+        questions.forEach((question, index) => {
+            const questionNum = index + 1;
+            const title = question.querySelector('.question-title');
+            if (title) {
+                title.textContent = `Вопрос ${questionNum}`;
+            }
+        });
+    }
+
+    // Добавление нового вопроса
+    document.getElementById('addQuestionBtn').addEventListener('click', function () {
+        questionCounter++;
+        const questionHTML = `
+            <div class="question-block bg-brand-green-container rounded-xl p-6 relative" data-question="${questionCounter}">
+                <!-- Кнопка удаления вопроса -->
+                <button type="button" class="btn btn-circle btn-sm rounded-xl absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white border-none"
+                    onclick="removeQuestion(${questionCounter})">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <h4 class="text-lg font-bold text-brand-green-dark mb-4 question-title">Вопрос ${questionCounter}</h4>
+
+                <!-- Текст вопроса -->
+                <div class="form-control mb-4">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700">Текст вопроса</span>
+                    </label>
+                    <textarea name="question_${questionCounter}_text" placeholder="Введите текст вопроса"
+                        class="textarea textarea-bordered w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                        rows="2" required></textarea>
+                </div>
+
+                <!-- Картинка (необязательно) -->
+                <div class="form-control mb-4">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700">Картинка (необязательно)</span>
+                    </label>
+                    <input type="file" name="question_${questionCounter}_image" accept="image/*"
+                        class="file-input file-input-bordered w-full focus:outline-none focus:ring-2 focus:ring-brand-green" />
+                </div>
+
+                <!-- Варианты ответов -->
+                <div class="mb-4">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700">Варианты ответов (макс. 5)</span>
+                    </label>
+                    <div class="space-y-2" id="answers_${questionCounter}">
+                        ${generateAnswerInputs(questionCounter, 4)}
+                    </div>
+                    <button type="button" class="btn btn-sm rounded-xl bg-brand-green-light hover:bg-brand-green text-white border-none mt-2 p-2"
+                        onclick="addAnswer(${questionCounter})" id="addAnswerBtn_${questionCounter}">
+                        Добавить вариант
+                    </button>
+                </div>
+
+                <!-- Правильный ответ -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700">Правильный ответ</span>
+                    </label>
+                    <select name="question_${questionCounter}_correct" 
+                        class="select select-bordered w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                        required id="correctSelect_${questionCounter}">
+                        <option value="">Выберите правильный ответ</option>
+                        <option value="1">Вариант 1</option>
+                        <option value="2">Вариант 2</option>
+                        <option value="3">Вариант 3</option>
+                        <option value="4">Вариант 4</option>
+                    </select>
+                </div>
+
+                <input type="hidden" name="question_${questionCounter}_answers_count" value="4" id="answersCount_${questionCounter}">
+            </div>
+        `;
+        document.getElementById('questionsContainer').insertAdjacentHTML('beforeend', questionHTML);
+        renumberQuestions();
+    });
+
+    // Генерация полей для вариантов ответов
+    function generateAnswerInputs(questionNum, count) {
+        let html = '';
+        for (let i = 1; i <= count; i++) {
+            html += `
+                <div class="flex gap-2 items-center answer-row" data-answer="${i}">
+                    <span class="text-gray-600 font-medium w-24">Вариант ${i}:</span>
+                    <input type="text" name="question_${questionNum}_answer_${i}" placeholder="Введите вариант ответа"
+                        class="input input-bordered flex-1 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                        required />
+                    <button type="button" class="btn btn-circle btn-sm bg-red-500 hover:bg-red-600 text-white border-none p-2"
+                        onclick="removeAnswer(${questionNum}, ${i})">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            `;
+        }
+        return html;
+    }
+
+    // Добавление варианта ответа
+    function addAnswer(questionNum) {
+        const container = document.getElementById(`answers_${questionNum}`);
+        const countInput = document.getElementById(`answersCount_${questionNum}`);
+        let currentCount = parseInt(countInput.value);
+
+        if (currentCount >= 5) {
+            alert('Максимум 5 вариантов ответа!');
+            return;
+        }
+
+        currentCount++;
+        const newAnswer = `
+            <div class="flex gap-2 items-center answer-row" data-answer="${currentCount}">
+                <span class="text-gray-600 font-medium w-24">Вариант ${currentCount}:</span>
+                <input type="text" name="question_${questionNum}_answer_${currentCount}" placeholder="Введите вариант ответа"
+                    class="input input-bordered flex-1 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                    required />
+                <button type="button" class="btn btn-circle btn-sm bg-red-500 hover:bg-red-600 text-white border-none"
+                    onclick="removeAnswer(${questionNum}, ${currentCount})">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', newAnswer);
+        countInput.value = currentCount;
+
+        // Обновляем select с правильным ответом
+        const correctSelect = document.getElementById(`correctSelect_${questionNum}`);
+        const newOption = document.createElement('option');
+        newOption.value = currentCount;
+        newOption.textContent = `Вариант ${currentCount}`;
+        correctSelect.appendChild(newOption);
+
+        // Скрываем кнопку если достигли лимита
+        if (currentCount >= 5) {
+            document.getElementById(`addAnswerBtn_${questionNum}`).classList.add('hidden');
+        }
+    }
+
+    // Удаление варианта ответа
+    function removeAnswer(questionNum, answerNum) {
+        const container = document.getElementById(`answers_${questionNum}`);
+        const countInput = document.getElementById(`answersCount_${questionNum}`);
+        const currentCount = parseInt(countInput.value);
+
+        if (currentCount <= 2) {
+            alert('Минимум 2 варианта ответа!');
+            return;
+        }
+
+        // Удаляем строку с ответом
+        const answerRow = container.querySelector(`[data-answer="${answerNum}"]`);
+        if (answerRow) {
+            answerRow.remove();
+        }
+
+        // Пересчитываем варианты
+        const remainingAnswers = container.querySelectorAll('.answer-row');
+        remainingAnswers.forEach((row, index) => {
+            const newNum = index + 1;
+            row.setAttribute('data-answer', newNum);
+            row.querySelector('.text-gray-600').textContent = `Вариант ${newNum}:`;
+            const input = row.querySelector('input');
+            input.name = `question_${questionNum}_answer_${newNum}`;
+            const button = row.querySelector('button');
+            button.setAttribute('onclick', `removeAnswer(${questionNum}, ${newNum})`);
+        });
+
+        // Обновляем счетчик
+        countInput.value = remainingAnswers.length;
+
+        // Обновляем select с правильным ответом
+        const correctSelect = document.getElementById(`correctSelect_${questionNum}`);
+        correctSelect.innerHTML = '<option value="">Выберите правильный ответ</option>';
+        for (let i = 1; i <= remainingAnswers.length; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = `Вариант ${i}`;
+            correctSelect.appendChild(option);
+        }
+
+        // Показываем кнопку добавления если были скрыты
+        if (remainingAnswers.length < 5) {
+            document.getElementById(`addAnswerBtn_${questionNum}`).classList.remove('hidden');
+        }
+    }
+
+    // Удаление вопроса
+    function removeQuestion(questionNum) {
+        const questionBlock = document.querySelector(`[data-question="${questionNum}"]`);
+        if (questionBlock) {
+            questionBlock.remove();
+            deletedQuestions.add(questionNum);
+            renumberQuestions();
+        }
+    }
+
+    // Добавляем первый вопрос автоматически
+    document.getElementById('addQuestionBtn').click();
+</script>
+{% endblock %}
