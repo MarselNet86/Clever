@@ -101,28 +101,34 @@ def student_home(request):
     return redirect(request, 'main/student_panel.html')
 
 def register_view(request):
+    groups = Group.objects.all().order_by('name')
+
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            username = form.cleaned_data['username']
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password']
-            role = form.cleaned_data['role']
-            group = form.cleaned_data['group']
+            user = User.objects.create_user(
+                username=form.cleaned_data['username'],
+                email=form.cleaned_data['email'],
+                password=form.cleaned_data['password']
+            )
 
-            user = User.objects.create_user(username=username, email=email, password=password)
-            profile = UserProfile.objects.create(user=user, role=role)
+            profile = UserProfile.objects.create(
+                user=user,
+                role=form.cleaned_data['role']
+            )
 
-            # если студент — сохраняем группу
-            if role == "student":
-                profile.group = group
+            if profile.role == "student":
+                profile.group = Group.objects.get(id=request.POST.get('group'))
                 profile.save()
 
             return redirect('main:login')
     else:
         form = RegisterForm()
 
-    return render(request, 'main/register.html', {'form': form})
+    return render(request, 'main/register.html', {
+        'form': form,
+        'groups': groups,
+    })
 
 
 def login_view(request):

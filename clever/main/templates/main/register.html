@@ -87,8 +87,13 @@
                     <label class="label">
                         <span class="label-text font-medium text-gray-700">Группа</span>
                     </label>
-                    <input type="text" name="group" id="groupInput" placeholder="Введите название группы"
-                        class="input input-bordered w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2" />
+                    <select name="group" id="groupInput"
+                        class="select select-bordered w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2">
+                        <option value="">Выберите группу</option>
+                        {% for g in groups %}
+                        <option value="{{ g.id }}">{{ g.name }}</option>
+                        {% endfor %}
+                    </select>
                     {% if form.group.errors %}
                     <label class="label">
                         <span class="label-text-alt text-error">{{ form.group.errors.0 }}</span>
