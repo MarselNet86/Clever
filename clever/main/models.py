@@ -70,12 +70,8 @@ class Question(models.Model):
 
 class AnswerOption(models.Model):
     """Модель варианта ответа на вопрос"""
-    question = models.ForeignKey(
-        Question, 
-        on_delete=models.CASCADE, 
-        related_name='options',
-        verbose_name='Вопрос'
-    )
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
+
     text = models.CharField(max_length=500, verbose_name='Текст ответа')
     is_correct = models.BooleanField(default=False, verbose_name='Правильный ответ')
     order = models.IntegerField(default=0, verbose_name='Порядковый номер')
@@ -87,6 +83,27 @@ class AnswerOption(models.Model):
 
     def __str__(self):
         return f"{self.text} {'✓' if self.is_correct else ''}"
+    
+
+class TestResult(models.Model):
+    test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='results')
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    score = models.IntegerField(default=0)
+    total_questions = models.IntegerField(default=0)
+    time_spent = models.IntegerField(default=0)  # в секундах
+    completed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-completed_at']
+
+
+class UserAnswer(models.Model):
+    test_result = models.ForeignKey(TestResult, on_delete=models.CASCADE, related_name='answers')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    selected_answer = models.ForeignKey(AnswerOption, on_delete=models.CASCADE)
+    
+    class Meta:
+        unique_together = ('test_result', 'question')
 
 
 class StudentTestAttempt(models.Model):

@@ -1,0 +1,374 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Панель студента{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-brand-green-container">
+    <!-- Хедер -->
+    <div class="bg-brand-green-dark text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold">Clever - Панель студента</h1>
+                <div class="flex items-center gap-4">
+                    <span class="text-brand-green-container font-medium">{{ request.user.username }}</span>
+                    <span class="text-brand-white-light">Группа: {{ request.user.profile.group.name }}</span>
+                    <a href="{% url 'main:logout' %}"
+                        class="btn btn-sm bg-white hover:bg-gray-100 border-none text-brand-green-dark">
+                        Выход
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Список доступных тестов -->
+        <div id="testsListContent">
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <h2 class="text-2xl font-bold text-brand-green-dark mb-6">Доступные тесты</h2>
+
+                {% if tests_data %}
+                <div class="grid gap-4">
+                    {% for item in tests_data %}
+                    <div
+                        class="card bg-brand-green-container border-2 border-transparent {% if not item.is_completed %}hover:border-brand-green{% endif %} transition-all">
+                        <div class="card-body">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <h3 class="card-title text-brand-green-dark">{{ item.test.title }}</h3>
+                                        {% if item.is_completed %}
+                                        <span class="badge bg-brand-green text-white">✓ Пройден</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="text-gray-600 mt-2">{{ item.test.description }}</p>
+                                    <div class="flex gap-4 mt-3 text-sm text-gray-500">
+                                        <span>📝 Вопросов: {{ item.test.questions.count }}</span>
+                                        <span>👨‍🏫 Преподаватель: {{ item.test.created_by.username }}</span>
+                                    </div>
+
+                                    {% if item.is_completed %}
+                                    <div class="mt-4 p-4 bg-white rounded-xl">
+                                        <div class="flex items-center gap-6">
+                                            <div class="text-center">
+                                                <div class="text-3xl font-bold"
+                                                    style="color: {% if item.result.score >= item.pass_threshold %}#1B7D4A{% else %}#EF4444{% endif %}">
+                                                    {{ item.result.score }}/{{ item.result.total_questions }}
+                                                </div>
+
+                                                <div class="text-sm text-gray-600">Правильных ответов</div>
+                                            </div>
+                                            <div class="text-center">
+                                                <div class="text-2xl font-bold text-brand-green">
+                                                    {% widthratio item.result.score item.result.total_questions 100 %}%
+                                                </div>
+                                                <div class="text-sm text-gray-600">Процент</div>
+                                            </div>
+                                            <div class="text-center">
+                                                <div class="text-lg font-semibold text-gray-700">{{ item.time_fmt }}
+                                                </div>
+                                                <div class="text-sm text-gray-600">Время</div>
+                                            </div>
+                                            <div class="text-center">
+                                                <div class="text-sm text-gray-600">{{ item.completed_at_fmt }}</div>
+                                                <div class="text-xs text-gray-500">Дата прохождения</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                {% if not item.is_completed %}
+                                <button onclick="startTest({{ item.test.id }})"
+                                    class="btn bg-brand-green hover:bg-brand-green-hover text-white border-none">
+                                    Начать тест
+                                </button>
+                                {% else %}
+                                <button onclick="viewResult({{ item.test.id }})"
+                                    class="btn bg-gray-400 text-white border-none cursor-not-allowed" disabled>
+                                    Тест пройден
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-12">
+                    <p class="text-gray-500 text-lg">Нет доступных тестов</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Прохождение теста (скрыто по умолчанию) -->
+        <div id="testTakingContent" class="hidden">
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <!-- Шапка теста -->
+                <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-brand-green-container">
+                    <div>
+                        <h2 class="text-2xl font-bold text-brand-green-dark" id="testTitle"></h2>
+                        <p class="text-gray-600" id="testDescription"></p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-gray-500">Время</div>
+                        <div class="text-2xl font-bold text-brand-green" id="timer">00:00</div>
+                    </div>
+                </div>
+
+                <!-- Навигация по вопросам -->
+                <div class="mb-6">
+                    <div class="flex flex-wrap gap-2" id="questionNavigation">
+                        <!-- Кнопки с номерами вопросов будут здесь -->
+                    </div>
+                </div>
+
+                <!-- Текущий вопрос -->
+                <div id="currentQuestionContainer" class="mb-8">
+                    <!-- Содержимое вопроса будет загружаться динамически -->
+                </div>
+
+                <!-- Кнопки навигации -->
+                <div class="flex justify-between items-center">
+                    <button id="prevBtn" onclick="previousQuestion()"
+                        class="btn bg-gray-200 hover:bg-gray-300 text-gray-700 border-none">
+                        ← Предыдущий
+                    </button>
+                    <button id="nextBtn" onclick="nextQuestion()"
+                        class="btn bg-brand-green hover:bg-brand-green-hover text-white border-none">
+                        Следующий →
+                    </button>
+                    <button id="finishBtn" onclick="finishTest()"
+                        class="btn bg-brand-green hover:bg-brand-green-hover text-white border-none hidden">
+                        Завершить тест
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Результаты теста (скрыто по умолчанию) -->
+        <div id="testResultContent" class="hidden">
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-brand-green-dark mb-4">Тест завершен!</h2>
+                    <div class="text-6xl font-bold mb-2" id="resultScore" style="color: #1B7D4A;">0%</div>
+                    <p class="text-gray-600 text-lg" id="resultText"></p>
+                </div>
+
+                <!-- Детальные результаты -->
+                <div class="space-y-4" id="detailedResults">
+                    <!-- Результаты по каждому вопросу -->
+                </div>
+
+                <div class="text-center mt-8">
+                    <button onclick="location.reload()"
+                        class="btn bg-brand-green hover:bg-brand-green-hover text-white border-none">
+                        Вернуться к списку тестов
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentTest = null;
+    let currentQuestionIndex = 0;
+    let userAnswers = {};
+    let startTime = null;
+    let timerInterval = null;
+
+    // Начать тест
+    function startTest(testId) {
+        fetch(`/student/test/${testId}/start/`)
+            .then(response => response.json())
+            .then(data => {
+                currentTest = data;
+                currentQuestionIndex = 0;
+                userAnswers = {};
+                startTime = Date.now();
+
+                document.getElementById('testsListContent').classList.add('hidden');
+                document.getElementById('testTakingContent').classList.remove('hidden');
+
+                document.getElementById('testTitle').textContent = data.title;
+                document.getElementById('testDescription').textContent = data.description;
+
+                renderQuestionNavigation();
+                showQuestion(0);
+                startTimer();
+            });
+    }
+
+    // Таймер
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('timer').textContent =
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }, 1000);
+    }
+
+    // Навигация по вопросам
+    function renderQuestionNavigation() {
+        const nav = document.getElementById('questionNavigation');
+        nav.innerHTML = '';
+
+        currentTest.questions.forEach((q, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-circle btn-sm';
+            btn.textContent = index + 1;
+            btn.onclick = () => showQuestion(index);
+
+            if (userAnswers[q.id]) {
+                btn.classList.add('bg-brand-green', 'text-white');
+            } else if (index === currentQuestionIndex) {
+                btn.classList.add('bg-brand-green-dark', 'text-white');
+            } else {
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            }
+
+            nav.appendChild(btn);
+        });
+    }
+
+    // Показать вопрос
+    function showQuestion(index) {
+        currentQuestionIndex = index;
+        const question = currentTest.questions[index];
+
+        let html = `
+            <div class="mb-6">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="badge bg-brand-green text-white p-3">Вопрос ${index + 1}</span>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">${question.text}</h3>
+                
+                ${question.image ? `
+                    <div class="mb-6">
+                        <img src="${question.image}" alt="Изображение к вопросу" 
+                            class="max-w-2xl w-full rounded-xl shadow-lg mx-auto">
+                    </div>
+                ` : ''}
+                
+                <div class="space-y-3">
+                    ${question.answers.map((answer, idx) => `
+                        <label class="flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all
+                            ${userAnswers[question.id] === answer.id ? 'border-brand-green bg-brand-green-container' : 'border-gray-200 hover:border-brand-green-light'}">
+                            <input type="radio" name="question_${question.id}" value="${answer.id}"
+                                ${userAnswers[question.id] === answer.id ? 'checked' : ''}
+                                onchange="saveAnswer(${question.id}, ${answer.id})"
+                                class="radio radio-success mr-4">
+                            <span class="flex-1 text-gray-700">${idx + 1}. ${answer.text}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        document.getElementById('currentQuestionContainer').innerHTML = html;
+
+        // Обновляем кнопки навигации
+        document.getElementById('prevBtn').classList.toggle('hidden', index === 0);
+        document.getElementById('nextBtn').classList.toggle('hidden', index === currentTest.questions.length - 1);
+        document.getElementById('finishBtn').classList.toggle('hidden', index !== currentTest.questions.length - 1);
+
+        renderQuestionNavigation();
+    }
+
+    // Сохранить ответ
+    function saveAnswer(questionId, answerId) {
+        userAnswers[questionId] = answerId;
+        renderQuestionNavigation();
+    }
+
+    // Предыдущий вопрос
+    function previousQuestion() {
+        if (currentQuestionIndex > 0) {
+            showQuestion(currentQuestionIndex - 1);
+        }
+    }
+
+    // Следующий вопрос
+    function nextQuestion() {
+        if (currentQuestionIndex < currentTest.questions.length - 1) {
+            showQuestion(currentQuestionIndex + 1);
+        }
+    }
+
+    // Завершить тест
+    function finishTest() {
+        const unanswered = currentTest.questions.filter(q => !userAnswers[q.id]).length;
+
+        if (unanswered > 0) {
+            if (!confirm(`У вас остались неотвеченные вопросы: ${unanswered}. Завершить тест?`)) {
+                return;
+            }
+        }
+
+        clearInterval(timerInterval);
+
+        // Отправляем результаты на сервер
+        fetch(`/student/test/${currentTest.id}/submit/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                answers: userAnswers,
+                time_spent: Math.floor((Date.now() - startTime) / 1000)
+            })
+        })
+            .then(response => response.json())
+            .then(result => {
+                showResults(result);
+            });
+    }
+
+    // Показать результаты
+    function showResults(result) {
+        document.getElementById('testTakingContent').classList.add('hidden');
+        document.getElementById('testResultContent').classList.remove('hidden');
+
+        const percentage = Math.round((result.correct / result.total) * 100);
+        document.getElementById('resultScore').textContent = `${percentage}%`;
+        document.getElementById('resultScore').style.color = percentage >= 60 ? '#1B7D4A' : '#EF4444';
+        document.getElementById('resultText').textContent =
+            `Правильных ответов: ${result.correct} из ${result.total}`;
+
+        // Детальные результаты
+        let detailedHtml = '';
+        result.details.forEach((detail, index) => {
+            const isCorrect = detail.is_correct;
+            detailedHtml += `
+                <div class="bg-${isCorrect ? 'green' : 'red'}-50 rounded-xl p-4 border-2 border-${isCorrect ? 'green' : 'red'}-200">
+                    <div class="flex items-start gap-4">
+                        <div class="text-2xl">${isCorrect ? '✅' : '❌'}</div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-800 mb-2">Вопрос ${index + 1}</h4>
+                            <p class="text-gray-700 mb-2">${detail.question_text}</p>
+                            <div class="text-sm">
+                                <span class="text-gray-600">Ваш ответ: </span>
+                                <span class="font-medium ${isCorrect ? 'text-green-600' : 'text-red-600'}">${detail.user_answer}</span>
+                            </div>
+                            ${!isCorrect ? `
+                                <div class="text-sm mt-1">
+                                    <span class="text-gray-600">Правильный ответ: </span>
+                                    <span class="font-medium text-green-600">${detail.correct_answer}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById('detailedResults').innerHTML = detailedHtml;
+    }
+</script>
+{% endblock %}

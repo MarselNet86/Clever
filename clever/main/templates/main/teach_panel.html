@@ -32,6 +32,12 @@
                 </button>
                 <button
                     class="tab-button flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-200 bg-gray-100 text-gray-600"
+                    id="myTestsTab">
+                    Мои тесты
+                </button>
+
+                <button
+                    class="tab-button flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-200 bg-gray-100 text-gray-600"
                     id="createGroupTab">
                     Создание группы
                 </button>
@@ -43,10 +49,129 @@
             </div>
         </div>
 
+
+        <!-- Контент: Мои тесты -->
+        <div id="myTestsContent" class="bg-white rounded-2xl shadow-xl p-8 hidden">
+            <div class="flex justify-between items-center mb-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-brand-green-container rounded-xl flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-green" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-brand-green-dark">Мои тесты</h2>
+                </div>
+                <div class="text-sm text-gray-500">Всего тестов: <span class="font-semibold text-brand-green">{{
+                        my_tests|length
+                        }}</span></div>
+            </div>
+
+            {% if my_tests %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for t in my_tests %}
+                <div
+                    class="group bg-gradient-to-br from-white to-brand-green-container rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-brand-green relative overflow-hidden">
+
+                    <!-- Декоративный элемент -->
+                    <div
+                        class="absolute top-0 right-0 w-32 h-32 bg-brand-green opacity-5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500">
+                    </div>
+
+                    <!-- Иконка документа -->
+                    <div
+                        class="absolute top-4 right-4 w-12 h-12 bg-brand-green-light rounded-xl flex items-center justify-center opacity-20 group-hover:opacity-40 transition-opacity">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-green-dark" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+
+                    <!-- Заголовок -->
+                    <div class="relative">
+                        <h3
+                            class="font-bold text-brand-green-dark text-xl mb-2 pr-16 leading-tight group-hover:text-brand-green transition-colors">
+                            {{ t.title }}
+                        </h3>
+                        <div class="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            <span class="font-medium">{{ t.group.name }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Статистика -->
+                    <div class="grid grid-cols-2 gap-3 mb-5">
+                        <div class="bg-white rounded-xl p-3 shadow-sm">
+                            <div class="text-2xl font-bold text-brand-green">{{ t.questions.count }}</div>
+                            <div class="text-xs text-gray-500 uppercase tracking-wide">Вопросов</div>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 shadow-sm">
+                            <div class="text-2xl font-bold text-brand-green">{{ t.results_count|default:"0" }}</div>
+                            <div class="text-xs text-gray-500 uppercase tracking-wide">Прошли</div>
+                        </div>
+                    </div>
+
+                    <!-- Дата создания -->
+                    <div class="text-xs text-gray-400 mb-4 flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Создан {{ t.created_at|date:"d.m.Y" }}
+                    </div>
+
+                    <!-- Кнопка удаления -->
+                    <form method="post" action="{% url 'main:delete_test' t.id %}"
+                        onsubmit="return confirm('Вы уверены, что хотите удалить тест «{{ t.title }}»?\n\nВсе результаты студентов будут удалены.');">
+                        {% csrf_token %}
+                        <button type="submit"
+                            class="btn bg-red-500 hover:bg-red-600 w-full text-white border-none rounded-xl shadow-md hover:shadow-lg transition-all duration-200 group/btn">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5 mr-2 group-hover/btn:rotate-12 transition-transform" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Удалить тест
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-16">
+                <div class="inline-block p-6 bg-brand-green-container rounded-full mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-brand-green opacity-50" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">Тестов пока нет</h3>
+                <p class="text-gray-500 mb-6">Создайте первый тест для ваших студентов</p>
+                <button onclick="activateTab('createTestTab')"
+                    class="btn bg-brand-green hover:bg-brand-green-hover text-white border-none rounded-xl px-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Создать первый тест
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+
         <!-- Контент: Создание теста -->
         <div id="createTestContent">
             <form id="testForm" method="post" action="{% url 'main:create_test' %}" enctype="multipart/form-data">
-
                 {% csrf_token %}
 
                 <div class="flex gap-6">
@@ -54,7 +179,17 @@
                     <div class="flex-1">
                         <div class="bg-white rounded-2xl shadow-xl p-8">
                             <div class="flex justify-between items-center mb-6">
-                                <h2 class="text-2xl font-bold text-brand-green-dark">Вопросы</h2>
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-10 h-10 bg-brand-green-container rounded-xl flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-green"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <h2 class="text-2xl font-bold text-brand-green-dark">Вопросы</h2>
+                                </div>
                                 <button type="button" id="addQuestionBtn"
                                     class="btn bg-brand-green rounded-xl hover:bg-brand-green-hover text-white border-none p-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none"
@@ -70,20 +205,47 @@
                             <div id="questionsContainer" class="space-y-6">
                                 <!-- Вопросы будут добавляться сюда динамически -->
                             </div>
+
+                            <!-- Пустое состояние -->
+                            <div id="emptyState" class="text-center py-12">
+                                <div
+                                    class="w-20 h-20 bg-brand-green-container rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-brand-green-light"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </div>
+                                <p class="text-gray-500 text-lg mb-2">Вопросов пока нет</p>
+                                <p class="text-gray-400 text-sm">Нажмите "Добавить вопрос" чтобы начать создание теста
+                                </p>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Правая часть: Фиксированная панель настроек -->
                     <div class="w-96">
                         <div class="bg-white rounded-2xl shadow-xl p-6 sticky top-8">
-                            <h2 class="text-xl font-bold text-brand-green-dark mb-6">Настройки теста</h2>
+                            <div class="flex items-center gap-3 mb-6">
+                                <div
+                                    class="w-10 h-10 bg-brand-green-container rounded-xl flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-green" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                                <h2 class="text-xl font-bold text-brand-green-dark">Настройки теста</h2>
+                            </div>
 
                             <!-- Название теста -->
                             <div class="form-control mb-4">
                                 <label class="label">
                                     <span class="label-text font-medium text-gray-700">Название теста</span>
                                 </label>
-                                <input type="text" name="test_title" placeholder="Введите название"
+                                <input type="text" name="test_title" placeholder="Например: Контрольная работа №1"
                                     class="input input-bordered w-full rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
                                     required />
                             </div>
@@ -93,7 +255,7 @@
                                 <label class="label">
                                     <span class="label-text font-medium text-gray-700">Описание</span>
                                 </label>
-                                <textarea name="test_description" placeholder="Краткое описание"
+                                <textarea name="test_description" placeholder="Краткое описание теста"
                                     class="textarea textarea-bordered w-full rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
                                     rows="3"></textarea>
                             </div>
@@ -110,14 +272,17 @@
                                     {% for g in groups %}
                                     <option value="{{ g.id }}">{{ g.name }}</option>
                                     {% endfor %}
-
                                 </select>
-
                             </div>
 
                             <!-- Кнопка создания теста -->
                             <button type="submit"
-                                class="btn bg-brand-green rounded-xl hover:bg-brand-green-hover text-white border-none w-full text-lg">
+                                class="btn bg-brand-green rounded-xl hover:bg-brand-green-hover text-white border-none w-full text-lg p-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 Создать тест
                             </button>
                         </div>
@@ -127,29 +292,190 @@
         </div>
 
         <!-- Контент: Создание группы -->
-        <div id="createGroupContent" class="bg-white rounded-2xl shadow-xl p-8 hidden">
-            <h2 class="text-2xl font-bold text-brand-green-dark mb-6">Создание группы</h2>
+        <div id="createGroupContent" class="hidden">
+            <div class="mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 bg-brand-green-container rounded-xl flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-green" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl font-bold text-brand-green-dark">Создание группы</h2>
+                    </div>
 
-            <form method="post" action="{% url 'main:create_group' %}">
-                {% csrf_token %}
-                <div class="form-control mb-4">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Название группы</span>
-                    </label>
-                    <input type="text" name="group_name" class="input input-bordered w-full rounded-xl p-2" required>
+                    <form method="post" action="{% url 'main:create_group' %}">
+                        {% csrf_token %}
+
+                        <div class="form-control mb-6">
+                            <label class="label">
+                                <span class="label-text font-medium text-gray-700 text-lg">Название группы</span>
+                            </label>
+                            <input type="text" name="group_name" placeholder="Например: ИС-301, БИ-202"
+                                class="input input-bordered w-full rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2 text-lg"
+                                required>
+                            <label class="label">
+                                <span class="label-text-alt text-gray-500">Введите уникальное название для группы</span>
+                            </label>
+                        </div>
+
+                        <div class="bg-brand-green-container rounded-xl p-4 mb-6">
+                            <div class="flex items-start gap-3">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5 text-brand-green flex-shrink-0 mt-0.5" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <p class="text-sm text-gray-700">
+                                    После создания группы вы сможете назначать студентов и создавать для них тесты.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button type="submit"
+                                class="btn bg-brand-green rounded-xl hover:bg-brand-green-hover text-white border-none flex-1 text-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Создать группу
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <button type="submit"
-                    class="btn bg-brand-green rounded-xl hover:bg-brand-green-hover text-white border-none w-full text-lg">
-                    Создать группу
-                </button>
-            </form>
+            </div>
         </div>
 
 
         <!-- Контент: Результаты (скрыт по умолчанию) -->
-        <div id="resultsContent" class="bg-white rounded-2xl shadow-xl p-8 hidden">
-            <h2 class="text-2xl font-bold text-brand-green-dark mb-6">Результаты тестов</h2>
-            <p class="text-gray-600">Здесь будут отображаться результаты выполненных тестов</p>
+        <div id="resultsContent" class="hidden">
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <div class="flex justify-between items-center mb-8">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-brand-green-container rounded-xl flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-green" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl font-bold text-brand-green-dark">Результаты студентов</h2>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        Всего результатов: <span class="font-semibold text-brand-green">{{ results_data|length }}</span>
+                    </div>
+                </div>
+
+                {% if results_data %}
+                <!-- Фильтры и поиск -->
+                <div class="mb-6 flex gap-4">
+                    <div class="flex-1">
+                        <input type="text" id="searchInput" placeholder="Поиск по студенту или тесту..."
+                            class="input input-bordered w-full rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green p-2">
+                    </div>
+                    <select id="filterStatus"
+                        class="select select-bordered rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green p-2">
+                        <option value="all">Все статусы</option>
+                        <option value="passed">Сдано</option>
+                        <option value="failed">Не сдано</option>
+                    </select>
+                </div>
+
+                <!-- Таблица результатов -->
+                <div class="overflow-x-auto">
+                    <table class="table w-full">
+                        <thead>
+                            <tr class="border-b-2 border-brand-green-container">
+                                <th class="text-left p-4">Тест</th>
+                                <th class="text-left p-4">Студент</th>
+                                <th class="text-left p-4">Группа</th>
+                                <th class="text-center p-4">Результат</th>
+                                <th class="text-center p-4">Процент</th>
+                                <th class="text-center p-4">Время</th>
+                                <th class="text-center p-4">Дата</th>
+                                <th class="text-center p-4">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                            {% for result in results_data %}
+                            <tr class="border-b border-gray-200 hover:bg-brand-green-container transition-colors result-row"
+                                data-test-name="{{ result.test_title|lower }}"
+                                data-student-name="{{ result.student_name|lower }}"
+                                data-status="{% if result.passed %}passed{% else %}failed{% endif %}">
+                                <td class="p-4">
+                                    <div class="font-medium text-gray-900">{{ result.test_title }}</div>
+                                </td>
+                                <td class="p-4">
+                                    <div class="font-medium text-gray-900">{{ result.student_name }}</div>
+                                </td>
+                                <td class="p-4">
+                                    <span class="badge bg-brand-green-light text-white rounded-xl p-2">{{
+                                        result.student_group
+                                        }}</span>
+                                </td>
+                                <td class="text-center p-4">
+                                    <span class="font-bold text-brand-green-dark">{{ result.score }}/{{ result.total
+                                        }}</span>
+                                </td>
+                                <td class="text-center p-4">
+                                    {% if result.passed %}
+                                    <span class="badge bg-green-500 text-white text-lg p-3 rounded-xl">{{
+                                        result.percentage
+                                        }}%</span>
+                                    {% else %}
+                                    <span class="badge bg-red-500 text-white text-lg p-3 rounded-xl">{{
+                                        result.percentage
+                                        }}%</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center p-4 text-gray-600">{{ result.time_formatted }}</td>
+                                <td class="text-center p-4 text-gray-600 text-sm">{{ result.completed_at }}</td>
+                                <td class="text-center p-4">
+                                    <a href=""
+                                        class="btn btn-sm bg-brand-green hover:bg-brand-green-hover text-white border-none rounded-xl p-2">
+                                        Подробнее
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Пустое состояние для фильтрации -->
+                <div id="noResultsMessage" class="text-center py-12 hidden">
+                    <div
+                        class="w-20 h-20 bg-brand-green-container rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-brand-green-light" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <p class="text-gray-500 text-lg mb-2">Ничего не найдено</p>
+                    <p class="text-gray-400 text-sm">Попробуйте изменить параметры поиска</p>
+                </div>
+
+                {% else %}
+                <!-- Пустое состояние когда нет результатов -->
+                <div class="text-center py-16">
+                    <div class="inline-block p-6 bg-brand-green-container rounded-full mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-brand-green opacity-50"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Результатов пока нет</h3>
+                    <p class="text-gray-500 mb-6">Как только студенты пройдут тесты, результаты появятся здесь</p>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
@@ -157,6 +483,12 @@
 <script>
     let questionCounter = 0;
     let deletedQuestions = new Set();
+
+    function updateEmptyState() {
+        const hasQuestions = document.querySelectorAll('.question-block').length > 0;
+        document.getElementById('emptyState').classList.toggle('hidden', hasQuestions);
+    }
+
 
     // --- универсальное переключение табов ---
     function activateTab(tabId) {
@@ -175,6 +507,7 @@
         document.getElementById('createTestContent').classList.add('hidden');
         document.getElementById('createGroupContent').classList.add('hidden');
         document.getElementById('resultsContent').classList.add('hidden');
+        document.getElementById('myTestsContent').classList.add('hidden');
 
         if (tabId === 'createTestTab') {
             document.getElementById('createTestContent').classList.remove('hidden');
@@ -185,12 +518,17 @@
         if (tabId === 'resultsTab') {
             document.getElementById('resultsContent').classList.remove('hidden');
         }
+        if (tabId === 'myTestsTab') {
+            document.getElementById('myTestsContent').classList.remove('hidden');
+        }
     }
 
     // назначаем обработчики
     document.getElementById('createTestTab').onclick = () => activateTab('createTestTab');
     document.getElementById('createGroupTab').onclick = () => activateTab('createGroupTab');
     document.getElementById('resultsTab').onclick = () => activateTab('resultsTab');
+    document.getElementById('myTestsTab').onclick = () => activateTab('myTestsTab');
+
 
 
     // Функция для пересчета номеров вопросов
@@ -207,6 +545,7 @@
 
     // Добавление нового вопроса
     document.getElementById('addQuestionBtn').addEventListener('click', function () {
+
         questionCounter++;
         const questionHTML = `
             <div class="question-block bg-brand-green-container rounded-xl p-6 relative" data-question="${questionCounter}">
@@ -274,6 +613,7 @@
         `;
         document.getElementById('questionsContainer').insertAdjacentHTML('beforeend', questionHTML);
         renumberQuestions();
+        updateEmptyState();
     });
 
     // Генерация полей для вариантов ответов
@@ -395,10 +735,66 @@
             questionBlock.remove();
             deletedQuestions.add(questionNum);
             renumberQuestions();
+            updateEmptyState();
+
         }
     }
 
     // Добавляем первый вопрос автоматически
     document.getElementById('addQuestionBtn').click();
+
+        // Функционал поиска и фильтрации
+            document.addEventListener('DOMContentLoaded', function () {
+                const searchInput = document.getElementById('searchInput');
+                const filterStatus = document.getElementById('filterStatus');
+                const resultsTable = document.getElementById('resultsTableBody');
+                const noResultsMessage = document.getElementById('noResultsMessage');
+
+                if (searchInput && filterStatus) {
+                    function filterResults() {
+                        const searchTerm = searchInput.value.toLowerCase();
+                        const statusFilter = filterStatus.value;
+                        const rows = document.querySelectorAll('.result-row');
+                        let visibleCount = 0;
+
+                        rows.forEach(row => {
+                            const testName = row.dataset.testName;
+                            const studentName = row.dataset.studentName;
+                            const status = row.dataset.status;
+
+                            // Проверка поиска
+                            const matchesSearch = testName.includes(searchTerm) || studentName.includes(searchTerm);
+
+                            // Проверка фильтра статуса
+                            const matchesStatus = statusFilter === 'all' || status === statusFilter;
+
+                            // Показываем/скрываем строку
+                            if (matchesSearch && matchesStatus) {
+                                row.classList.remove('hidden');
+                                visibleCount++;
+                            } else {
+                                row.classList.add('hidden');
+                            }
+                        });
+
+                        // Показываем сообщение если ничего не найдено
+                        if (visibleCount === 0 && resultsTable) {
+                            resultsTable.parentElement.classList.add('hidden');
+                            if (noResultsMessage) {
+                                noResultsMessage.classList.remove('hidden');
+                            }
+                        } else {
+                            resultsTable.parentElement.classList.remove('hidden');
+                            if (noResultsMessage) {
+                                noResultsMessage.classList.add('hidden');
+                            }
+                        }
+                    }
+
+                    // Обработчики событий
+                    searchInput.addEventListener('input', filterResults);
+                    filterStatus.addEventListener('change', filterResults);
+                }
+            });
 </script>
 {% endblock %}
