@@ -1,0 +1,128 @@
+<div id="myTestsContent" class="bg-white rounded-2xl shadow-xl p-8 hidden">
+    <div class="flex justify-between items-center mb-8">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-brand-green-container rounded-xl flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-green" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-brand-green-dark">Мои тесты</h2>
+        </div>
+        <div class="text-sm text-gray-500">Всего тестов: <span class="font-semibold text-brand-green">{{ my_tests|length }}</span></div>
+    </div>
+
+    {% if my_tests %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for t in my_tests %}
+        <div
+            class="group bg-gradient-to-br from-white to-brand-green-container rounded-2xl p-6 transition-all duration-300 border border-gray-300 hover:border-brand-green relative overflow-hidden">
+
+            <!-- Декоративный элемент -->
+            <div
+                class="absolute top-0 right-0 w-32 h-32 bg-brand-green opacity-5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500">
+            </div>
+
+            <!-- Иконка документа -->
+            <div
+                class="absolute top-4 right-4 w-12 h-12 bg-brand-green-light rounded-xl flex items-center justify-center opacity-20 group-hover:opacity-40 transition-opacity">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-green-dark" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+
+            <!-- Заголовок -->
+            <div class="relative">
+                <h3
+                    class="font-bold text-brand-green-dark text-xl mb-2 pr-16 leading-tight group-hover:text-brand-green transition-colors">
+                    {{ t.title }}
+                </h3>
+                <div class="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span class="font-medium">{{ t.group.name }}</span>
+                </div>
+            </div>
+
+            <!-- Статистика -->
+            <div class="grid grid-cols-2 gap-3 mb-5">
+                <div class="bg-white rounded-xl p-3 border border-gray-300">
+                    <div class="text-2xl font-bold text-brand-green">{{ t.questions.count }}</div>
+                    <div class="text-xs text-gray-500 uppercase tracking-wide">Вопросов</div>
+                </div>
+                <div class="bg-white rounded-xl p-3 border border-gray-300">
+                    <div class="text-2xl font-bold text-brand-green">{{ t.results_count|default:"0" }}</div>
+                    <div class="text-xs text-gray-500 uppercase tracking-wide">Прошли</div>
+                </div>
+            </div>
+
+            <!-- Дата создания -->
+            <div class="text-xs text-gray-400 mb-4 flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Создан {{ t.created_at|date:"d.m.Y" }}
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="grid grid-cols-2 gap-3">
+                <button type="button" onclick="viewTestResults({{ t.id }})"
+                    class="btn bg-brand-green hover:bg-brand-green-hover text-white border-none rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    Результаты
+                </button>
+
+                <form method="post" action="{% url 'main:delete_test' t.id %}"
+                    onsubmit="return confirm('Вы уверены, что хотите удалить тест «{{ t.title }}»?\n\nВсе результаты студентов будут удалены.');">
+                    {% csrf_token %}
+                    <button type="submit"
+                        class="btn bg-red-500 hover:bg-red-600 w-full text-white border-none rounded-xl shadow-md hover:shadow-lg transition-all duration-200 group/btn">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5 mr-1 group-hover/btn:rotate-12 transition-transform" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Удалить
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-16">
+        <div class="inline-block p-6 bg-brand-green-container rounded-full mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-brand-green opacity-50" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">Тестов пока нет</h3>
+        <p class="text-gray-500 mb-6">Создайте первый тест для ваших студентов</p>
+        <button onclick="activateTab('createTestTab')"
+            class="btn bg-brand-green hover:bg-brand-green-hover text-white border-none rounded-xl px-8">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Создать первый тест
+        </button>
+    </div>
+    {% endif %}
+</div>

@@ -1,0 +1,56 @@
+<div id="createGroupContent" class="hidden">
+    <div class="mx-auto">
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 bg-brand-green-container rounded-xl flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-green" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-brand-green-dark">Создание группы</h2>
+            </div>
+
+            <form method="post" action="{% url 'main:create_group' %}" onsubmit="return stayHere(event)">
+                {% csrf_token %}
+
+                <div class="form-control mb-6">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700 text-lg">Название группы</span>
+                    </label>
+                    <input type="text" name="group_name" placeholder="Например: ИС-301, БИ-202"
+                        class="input input-bordered w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition bg-white"
+                        required>
+                    <label class="label">
+                        <span class="label-text-alt text-gray-500">Введите уникальное название для группы</span>
+                    </label>
+                </div>
+
+                <div class="bg-brand-green-container rounded-xl p-4 mb-6">
+                    <div class="flex items-start gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-green flex-shrink-0 mt-0.5"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-sm text-gray-700">
+                            После создания группы вы сможете назначать студентов и создавать для них тесты.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="submit"
+                        class="btn bg-brand-green rounded-xl hover:bg-brand-green-hover text-white border-none flex-1 text-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Создать группу
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

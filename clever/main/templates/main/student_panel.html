@@ -1,374 +1,307 @@
 {% extends 'main/base.html' %}
-
+{% load static %}
 {% block title %}Панель студента{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-brand-green-container">
-    <!-- Хедер -->
-    <div class="bg-brand-green-dark text-white shadow-lg">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex justify-between items-center">
-                <h1 class="text-2xl font-bold">Clever - Панель студента</h1>
-                <div class="flex items-center gap-4">
-                    <span class="text-brand-green-container font-medium">{{ request.user.username }}</span>
-                    <span class="text-brand-white-light">Группа: {{ request.user.profile.group.name }}</span>
-                    <a href="{% url 'main:logout' %}"
-                        class="btn btn-sm bg-white hover:bg-gray-100 border-none text-brand-green-dark">
-                        Выход
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-brand-green-container/30">
+    <div class="container mx-auto px-6 py-8">
 
-    <!-- Основной контент -->
-    <div class="container mx-auto px-4 py-8">
-        <!-- Список доступных тестов -->
-        <div id="testsListContent">
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <h2 class="text-2xl font-bold text-brand-green-dark mb-6">Доступные тесты</h2>
+        <!-- Список доступных тестов (КАРТОЧКИ) -->
+        <!-- Список доступных тестов (КАРТОЧКИ) -->
+        <section id="testsListContent">
+            <header class="mb-8">
+                <h1 class="text-3xl font-bold text-brand-green-dark mb-2">Мои тесты</h1>
+                <p class="text-gray-600">Доступные для прохождения тесты</p>
+            </header>
 
-                {% if tests_data %}
-                <div class="grid gap-4">
-                    {% for item in tests_data %}
-                    <div
-                        class="card bg-brand-green-container border-2 border-transparent {% if not item.is_completed %}hover:border-brand-green{% endif %} transition-all">
-                        <div class="card-body">
-                            <div class="flex justify-between items-start">
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <h3 class="card-title text-brand-green-dark">{{ item.test.title }}</h3>
-                                        {% if item.is_completed %}
-                                        <span class="badge bg-brand-green text-white">✓ Пройден</span>
-                                        {% endif %}
-                                    </div>
-                                    <p class="text-gray-600 mt-2">{{ item.test.description }}</p>
-                                    <div class="flex gap-4 mt-3 text-sm text-gray-500">
-                                        <span>📝 Вопросов: {{ item.test.questions.count }}</span>
-                                        <span>👨‍🏫 Преподаватель: {{ item.test.created_by.username }}</span>
-                                    </div>
+            {% if tests_data %}
+            <!-- Сетка карточек -->
+            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 items-stretch">
+                {% for item in tests_data %}
+                <article
+                    class="h-full flex flex-col bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden transition-all duration-200 hover:shadow-lg {% if not item.is_completed %}hover:border-brand-green/40 hover:-translate-y-0.5{% endif %}"
+                    data-test-id="{{ item.test.id }}">
 
-                                    {% if item.is_completed %}
-                                    <div class="mt-4 p-4 bg-white rounded-xl">
-                                        <div class="flex items-center gap-6">
-                                            <div class="text-center">
-                                                <div class="text-3xl font-bold"
-                                                    style="color: {% if item.result.score >= item.pass_threshold %}#1B7D4A{% else %}#EF4444{% endif %}">
-                                                    {{ item.result.score }}/{{ item.result.total_questions }}
-                                                </div>
+                    <!-- Контент карточки -->
+                    <div class="p-6 flex-1 flex flex-col min-w-0">
+                        <!-- Заголовок + статус -->
+                        <div class="flex items-start gap-3 mb-3">
+                            <h2 class="text-lg font-bold text-gray-900 flex-1 leading-tight">{{ item.test.title }}</h2>
+                            {% if item.is_completed %}
+                            <span
+                                class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full shrink-0">
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                Пройден
+                            </span>
+                            {% else %}
+                            <span
+                                class="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full shrink-0">Доступен</span>
+                            {% endif %}
+                        </div>
 
-                                                <div class="text-sm text-gray-600">Правильных ответов</div>
-                                            </div>
-                                            <div class="text-center">
-                                                <div class="text-2xl font-bold text-brand-green">
-                                                    {% widthratio item.result.score item.result.total_questions 100 %}%
-                                                </div>
-                                                <div class="text-sm text-gray-600">Процент</div>
-                                            </div>
-                                            <div class="text-center">
-                                                <div class="text-lg font-semibold text-gray-700">{{ item.time_fmt }}
-                                                </div>
-                                                <div class="text-sm text-gray-600">Время</div>
-                                            </div>
-                                            <div class="text-center">
-                                                <div class="text-sm text-gray-600">{{ item.completed_at_fmt }}</div>
-                                                <div class="text-xs text-gray-500">Дата прохождения</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                </div>
+                        <!-- Описание -->
+                        {% if item.test.description %}
+                        <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ item.test.description }}</p>
+                        {% endif %}
 
-                                {% if not item.is_completed %}
-                                <button onclick="startTest({{ item.test.id }})"
-                                    class="btn bg-brand-green hover:bg-brand-green-hover text-white border-none">
-                                    Начать тест
-                                </button>
-                                {% else %}
-                                <button onclick="viewResult({{ item.test.id }})"
-                                    class="btn bg-gray-400 text-white border-none cursor-not-allowed" disabled>
-                                    Тест пройден
-                                </button>
-                                {% endif %}
+                        <!-- Метаданные -->
+                        <div class="flex flex-col gap-2 text-sm text-gray-600 mb-4">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span>
+                                    {{ item.test.questions.count }}
+                                    {% if item.test.questions.count == 1 %}
+                                    вопрос
+                                    {% elif item.test.questions.count >= 2 and item.test.questions.count <= 4 %} вопроса
+                                        {% else %} вопросов {% endif %} </span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span class="truncate">
+                                    {{ item.test.created_by.get_full_name|default:item.test.created_by.username }}</span>
                             </div>
                         </div>
+
+                        <!-- Статистика для пройденных -->
+                        {% if item.is_completed %}
+                        <div
+                            class="mt-auto p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold"
+                                        style="color: {% if item.result.score >= item.pass_threshold|default:0 %}#059669{% else %}#DC2626{% endif %}">
+                                        {{ item.result.score }}<span class="text-sm text-gray-500 font-normal">/{{ item.result.total_questions }}</span>
+                                    </div>
+                                    <div class="text-xs text-gray-600 mt-1">Правильных</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold text-brand-green">
+                                        {% widthratio item.result.score item.result.total_questions 100 %}%
+                                    </div>
+                                    <div class="text-xs text-gray-600 mt-1">Процент</div>
+                                </div>
+                                <div class="text-center pt-2 border-t border-gray-200">
+                                    <div class="text-sm font-semibold text-gray-700">{{ item.time_fmt }}</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">Время</div>
+                                </div>
+                                <div class="text-center pt-2 border-t border-gray-200">
+                                    <div class="text-sm font-medium text-gray-700">{{ item.completed_at_fmt }}</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">Дата</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <!-- растяжка для непройденных тестов -->
+                        <div class="mt-auto"></div>
+                        {% endif %}
                     </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="text-center py-12">
-                    <p class="text-gray-500 text-lg">Нет доступных тестов</p>
-                </div>
-                {% endif %}
+
+                    <!-- Низ карточки: действие -->
+                    <div class="px-6 pb-6 pt-3">
+                        {% if not item.is_completed %}
+                        <button type="button" data-action="start" data-test-id="{{ item.test.id }}"
+                            class="w-full px-5 py-3 bg-brand-green hover:bg-brand-green-hover text-white font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-green focus:ring-offset-2 transform hover:scale-[1.02]">
+                            Начать тест
+                        </button>
+                        {% else %}
+                        <button type="button" disabled
+                            class="w-full px-5 py-3 bg-gray-200 text-gray-500 font-semibold rounded-xl cursor-not-allowed">
+                            Тест пройден
+                        </button>
+                        {% endif %}
+                    </div>
+                </article>
+                {% endfor %}
             </div>
-        </div>
+            {% else %}
+            <!-- Пустое состояние -->
+            <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-12 text-center">
+                <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Нет доступных тестов</h3>
+                <p class="text-gray-500">Когда преподаватель назначит вам тесты, они появятся здесь</p>
+            </div>
+            {% endif %}
+        </section>
 
-        <!-- Прохождение теста (скрыто по умолчанию) -->
-        <div id="testTakingContent" class="hidden">
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <!-- Шапка теста -->
-                <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-brand-green-container">
-                    <div>
-                        <h2 class="text-2xl font-bold text-brand-green-dark" id="testTitle"></h2>
-                        <p class="text-gray-600" id="testDescription"></p>
+
+        <!-- Прохождение теста -->
+        <section id="testTakingContent" class="hidden">
+            <!-- Sticky header -->
+            <header class="sticky top-0 z-10 bg-white shadow-md rounded-2xl mb-6 overflow-hidden">
+                <div class="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                        <h1 id="testTitle" class="text-2xl font-bold text-brand-green-dark truncate"></h1>
+                        <p id="testDescription" class="text-sm text-gray-600 truncate"></p>
                     </div>
-                    <div class="text-right">
-                        <div class="text-sm text-gray-500">Время</div>
-                        <div class="text-2xl font-bold text-brand-green" id="timer">00:00</div>
+                    <div class="flex items-center gap-6 flex-shrink-0">
+                        <div class="text-right">
+                            <div class="text-xs text-gray-500 uppercase tracking-wide">Время</div>
+                            <div id="timer" class="text-2xl font-bold text-brand-green tabular-nums" aria-live="polite">
+                                00:00</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs text-gray-500 uppercase tracking-wide">Прогресс</div>
+                            <div id="progress" class="text-2xl font-bold text-gray-700 tabular-nums">0/0</div>
+                        </div>
                     </div>
                 </div>
+                <!-- Progress bar -->
+                <div class="h-1.5 bg-gray-200">
+                    <div id="progressBar" class="h-full bg-brand-green transition-all duration-300" style="width: 0%"
+                        role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </header>
 
+            <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-6 lg:p-8">
                 <!-- Навигация по вопросам -->
-                <div class="mb-6">
-                    <div class="flex flex-wrap gap-2" id="questionNavigation">
-                        <!-- Кнопки с номерами вопросов будут здесь -->
-                    </div>
-                </div>
+                <nav class="mb-8" aria-label="Навигация по вопросам">
+                    <h2 class="sr-only">Список вопросов</h2>
+                    <ol id="questionNavigation" class="flex flex-wrap gap-2"></ol>
+                </nav>
 
                 <!-- Текущий вопрос -->
-                <div id="currentQuestionContainer" class="mb-8">
-                    <!-- Содержимое вопроса будет загружаться динамически -->
-                </div>
+                <main id="currentQuestionContainer" class="mb-8 min-h-[300px]"></main>
 
                 <!-- Кнопки навигации -->
-                <div class="flex justify-between items-center">
-                    <button id="prevBtn" onclick="previousQuestion()"
-                        class="btn bg-gray-200 hover:bg-gray-300 text-gray-700 border-none">
-                        ← Предыдущий
+                <footer
+                    class="flex flex-col sm:flex-row gap-3 justify-between items-stretch sm:items-center pt-6 border-t border-gray-200">
+                    <button type="button" id="prevBtn" data-action="prev"
+                        class="order-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span class="flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 19l-7-7 7-7" />
+                            </svg>
+                            <span>Предыдущий</span>
+                        </span>
                     </button>
-                    <button id="nextBtn" onclick="nextQuestion()"
-                        class="btn bg-brand-green hover:bg-brand-green-hover text-white border-none">
-                        Следующий →
+
+                    <button type="button" id="skipBtn" data-action="skip"
+                        class="order-3 sm:order-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
+                        Пропустить
                     </button>
-                    <button id="finishBtn" onclick="finishTest()"
-                        class="btn bg-brand-green hover:bg-brand-green-hover text-white border-none hidden">
-                        Завершить тест
+
+                    <button type="button" id="nextBtn" data-action="next"
+                        class="order-2 sm:order-3 px-6 py-3 bg-brand-green hover:bg-brand-green-hover text-white font-semibold rounded-xl transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-green focus:ring-offset-2">
+                        <span class="flex items-center justify-center gap-2">
+                            <span>Следующий</span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5l7 7-7 7" />
+                            </svg>
+                        </span>
                     </button>
-                </div>
+
+                    <button type="button" id="finishBtn" data-action="finish"
+                        class="hidden order-2 sm:order-3 px-6 py-3 bg-brand-green hover:bg-brand-green-hover text-white font-semibold rounded-xl transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-green focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed">
+                        <span class="flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Завершить тест</span>
+                        </span>
+                    </button>
+                </footer>
             </div>
-        </div>
+        </section>
 
-        <!-- Результаты теста (скрыто по умолчанию) -->
-        <div id="testResultContent" class="hidden">
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold text-brand-green-dark mb-4">Тест завершен!</h2>
-                    <div class="text-6xl font-bold mb-2" id="resultScore" style="color: #1B7D4A;">0%</div>
-                    <p class="text-gray-600 text-lg" id="resultText"></p>
+        <!-- Результаты теста -->
+        <section id="testResultContent" class="hidden">
+            <div class="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+                <header
+                    class="bg-gradient-to-r from-brand-green-container to-brand-green-container/50 px-8 py-12 text-center">
+                    <h1 class="text-3xl font-bold text-brand-green-dark mb-4">Тест завершен!</h1>
+                    <div id="resultScore" class="text-7xl font-bold mb-3 tabular-nums" style="color: #059669;">0%</div>
+                    <p id="resultText" class="text-lg text-gray-700"></p>
+                    <p id="resultTime" class="text-sm text-gray-600 mt-2"></p>
+                </header>
+
+                <div class="px-8 py-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Детализация по вопросам</h2>
+                    <div id="detailedResults" class="space-y-3"></div>
                 </div>
 
-                <!-- Детальные результаты -->
-                <div class="space-y-4" id="detailedResults">
-                    <!-- Результаты по каждому вопросу -->
-                </div>
-
-                <div class="text-center mt-8">
-                    <button onclick="location.reload()"
-                        class="btn bg-brand-green hover:bg-brand-green-hover text-white border-none">
+                <footer
+                    class="px-8 py-6 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row gap-3 justify-center">
+                    <button type="button" data-action="return"
+                        class="px-6 py-3 bg-brand-green hover:bg-brand-green-hover text-white font-semibold rounded-xl transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-green focus:ring-offset-2">
                         Вернуться к списку тестов
                     </button>
-                </div>
+                </footer>
             </div>
-        </div>
+        </section>
     </div>
 </div>
 
-<script>
-    let currentTest = null;
-    let currentQuestionIndex = 0;
-    let userAnswers = {};
-    let startTime = null;
-    let timerInterval = null;
+<!-- Модальное окно подтверждения -->
+<dialog id="confirmFinishModal" class="modal">
+    <div class="modal-box max-w-md rounded-xl">
+        <h3 class="font-bold text-xl text-gray-800 mb-4">Завершить тест?</h3>
+        <p id="modalMessage" class="text-gray-600 mb-6"></p>
+        <div class="modal-action justify-end gap-3">
+            <button type="button" data-action="modal-cancel"
+                class="px-5 py-2.5 bg-gray-200 rounded-xl hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400">
+                Продолжить
+            </button>
+            <button type="button" data-action="modal-confirm"
+                class="px-5 py-2.5 bg-brand-green rounded-xl hover:bg-brand-green-hover text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-brand-green">
+                Да, завершить
+            </button>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button type="button" data-action="modal-cancel">Закрыть</button>
+    </form>
+</dialog>
 
-    // Начать тест
-    function startTest(testId) {
-        fetch(`/student/test/${testId}/start/`)
-            .then(response => response.json())
-            .then(data => {
-                currentTest = data;
-                currentQuestionIndex = 0;
-                userAnswers = {};
-                startTime = Date.now();
+<!-- Overlay загрузки -->
+<div id="loadingOverlay"
+    class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-4">
+        <span class="loading loading-spinner loading-lg text-brand-green"></span>
+        <p id="loadingText" class="text-gray-700 font-medium">Загрузка...</p>
+    </div>
+</div>
 
-                document.getElementById('testsListContent').classList.add('hidden');
-                document.getElementById('testTakingContent').classList.remove('hidden');
+<!-- Баннер ошибки -->
+<div id="errorBanner" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-2xl w-full mx-4">
+    <div class="bg-red-50 border-2 border-red-200 rounded-xl shadow-lg p-4 flex items-start gap-3">
+        <svg class="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div class="flex-1">
+            <h4 class="font-semibold text-red-900 mb-1">Произошла ошибка</h4>
+            <p id="errorMessage" class="text-sm text-red-700"></p>
+        </div>
+        <button type="button" data-action="close-error" class="text-red-400 hover:text-red-600 focus:outline-none">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clip-rule="evenodd" />
+            </svg>
+        </button>
+    </div>
+</div>
 
-                document.getElementById('testTitle').textContent = data.title;
-                document.getElementById('testDescription').textContent = data.description;
-
-                renderQuestionNavigation();
-                showQuestion(0);
-                startTimer();
-            });
-    }
-
-    // Таймер
-    function startTimer() {
-        timerInterval = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            const minutes = Math.floor(elapsed / 60);
-            const seconds = elapsed % 60;
-            document.getElementById('timer').textContent =
-                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        }, 1000);
-    }
-
-    // Навигация по вопросам
-    function renderQuestionNavigation() {
-        const nav = document.getElementById('questionNavigation');
-        nav.innerHTML = '';
-
-        currentTest.questions.forEach((q, index) => {
-            const btn = document.createElement('button');
-            btn.className = 'btn btn-circle btn-sm';
-            btn.textContent = index + 1;
-            btn.onclick = () => showQuestion(index);
-
-            if (userAnswers[q.id]) {
-                btn.classList.add('bg-brand-green', 'text-white');
-            } else if (index === currentQuestionIndex) {
-                btn.classList.add('bg-brand-green-dark', 'text-white');
-            } else {
-                btn.classList.add('bg-gray-200', 'text-gray-700');
-            }
-
-            nav.appendChild(btn);
-        });
-    }
-
-    // Показать вопрос
-    function showQuestion(index) {
-        currentQuestionIndex = index;
-        const question = currentTest.questions[index];
-
-        let html = `
-            <div class="mb-6">
-                <div class="flex items-center gap-2 mb-4">
-                    <span class="badge bg-brand-green text-white p-3">Вопрос ${index + 1}</span>
-                </div>
-                <h3 class="text-xl font-semibold text-gray-800 mb-4">${question.text}</h3>
-                
-                ${question.image ? `
-                    <div class="mb-6">
-                        <img src="${question.image}" alt="Изображение к вопросу" 
-                            class="max-w-2xl w-full rounded-xl shadow-lg mx-auto">
-                    </div>
-                ` : ''}
-                
-                <div class="space-y-3">
-                    ${question.answers.map((answer, idx) => `
-                        <label class="flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all
-                            ${userAnswers[question.id] === answer.id ? 'border-brand-green bg-brand-green-container' : 'border-gray-200 hover:border-brand-green-light'}">
-                            <input type="radio" name="question_${question.id}" value="${answer.id}"
-                                ${userAnswers[question.id] === answer.id ? 'checked' : ''}
-                                onchange="saveAnswer(${question.id}, ${answer.id})"
-                                class="radio radio-success mr-4">
-                            <span class="flex-1 text-gray-700">${idx + 1}. ${answer.text}</span>
-                        </label>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-
-        document.getElementById('currentQuestionContainer').innerHTML = html;
-
-        // Обновляем кнопки навигации
-        document.getElementById('prevBtn').classList.toggle('hidden', index === 0);
-        document.getElementById('nextBtn').classList.toggle('hidden', index === currentTest.questions.length - 1);
-        document.getElementById('finishBtn').classList.toggle('hidden', index !== currentTest.questions.length - 1);
-
-        renderQuestionNavigation();
-    }
-
-    // Сохранить ответ
-    function saveAnswer(questionId, answerId) {
-        userAnswers[questionId] = answerId;
-        renderQuestionNavigation();
-    }
-
-    // Предыдущий вопрос
-    function previousQuestion() {
-        if (currentQuestionIndex > 0) {
-            showQuestion(currentQuestionIndex - 1);
-        }
-    }
-
-    // Следующий вопрос
-    function nextQuestion() {
-        if (currentQuestionIndex < currentTest.questions.length - 1) {
-            showQuestion(currentQuestionIndex + 1);
-        }
-    }
-
-    // Завершить тест
-    function finishTest() {
-        const unanswered = currentTest.questions.filter(q => !userAnswers[q.id]).length;
-
-        if (unanswered > 0) {
-            if (!confirm(`У вас остались неотвеченные вопросы: ${unanswered}. Завершить тест?`)) {
-                return;
-            }
-        }
-
-        clearInterval(timerInterval);
-
-        // Отправляем результаты на сервер
-        fetch(`/student/test/${currentTest.id}/submit/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({
-                answers: userAnswers,
-                time_spent: Math.floor((Date.now() - startTime) / 1000)
-            })
-        })
-            .then(response => response.json())
-            .then(result => {
-                showResults(result);
-            });
-    }
-
-    // Показать результаты
-    function showResults(result) {
-        document.getElementById('testTakingContent').classList.add('hidden');
-        document.getElementById('testResultContent').classList.remove('hidden');
-
-        const percentage = Math.round((result.correct / result.total) * 100);
-        document.getElementById('resultScore').textContent = `${percentage}%`;
-        document.getElementById('resultScore').style.color = percentage >= 60 ? '#1B7D4A' : '#EF4444';
-        document.getElementById('resultText').textContent =
-            `Правильных ответов: ${result.correct} из ${result.total}`;
-
-        // Детальные результаты
-        let detailedHtml = '';
-        result.details.forEach((detail, index) => {
-            const isCorrect = detail.is_correct;
-            detailedHtml += `
-                <div class="bg-${isCorrect ? 'green' : 'red'}-50 rounded-xl p-4 border-2 border-${isCorrect ? 'green' : 'red'}-200">
-                    <div class="flex items-start gap-4">
-                        <div class="text-2xl">${isCorrect ? '✅' : '❌'}</div>
-                        <div class="flex-1">
-                            <h4 class="font-bold text-gray-800 mb-2">Вопрос ${index + 1}</h4>
-                            <p class="text-gray-700 mb-2">${detail.question_text}</p>
-                            <div class="text-sm">
-                                <span class="text-gray-600">Ваш ответ: </span>
-                                <span class="font-medium ${isCorrect ? 'text-green-600' : 'text-red-600'}">${detail.user_answer}</span>
-                            </div>
-                            ${!isCorrect ? `
-                                <div class="text-sm mt-1">
-                                    <span class="text-gray-600">Правильный ответ: </span>
-                                    <span class="font-medium text-green-600">${detail.correct_answer}</span>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-
-        document.getElementById('detailedResults').innerHTML = detailedHtml;
-    }
-</script>
+<script>const CSRF_TOKEN = '{{ csrf_token }}';</script>
+<script src="{% static 'main/student.js' %}"></script>
 {% endblock %}

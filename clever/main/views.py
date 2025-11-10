@@ -136,6 +136,50 @@ def create_test(request):
 
 
 @login_required
+def test_detail_results(request, test_id):
+    if request.user.profile.role != 'teacher':
+        return JsonResponse({'error': 'Access denied'}, status=403)
+    
+    test = get_object_or_404(Test, id=test_id, created_by=request.user)
+    
+    # Получаем все результаты для этого теста
+    results = TestResult.objects.filter(test=test).select_related(
+        'student', 'student__profile'
+    ).order_by('-completed_at')
+    
+    # Форматируем данные
+    results_data = []
+    for result in results:
+        percentage = 0
+        if result.total_questions:
+            percentage = round((result.score / result.total_questions) * 100, 1)
+        
+        results_data.append({
+            'id': result.id,
+            'student_name': result.student.get_full_name() or result.student.username,
+            'student_username': result.student.username,
+            'student_group': result.student.profile.group.name if result.student.profile.group else 'Без группы',
+            'score': result.score,
+            'total': result.total_questions,
+            'percentage': percentage,
+            'time_spent': result.time_spent,
+            'time_formatted': f"{result.time_spent // 60:02d}:{result.time_spent % 60:02d}",
+            'completed_at': result.completed_at.strftime("%d.%m.%Y %H:%M"),
+            'passed': percentage >= 60
+        })
+    
+    return JsonResponse({
+        'test_title': test.title,
+        'test_description': test.description,
+        'group_name': test.group.name,
+        'questions_count': test.questions.count(),
+        'created_at': test.created_at.strftime("%d.%m.%Y"),
+        'results': results_data,
+        'total_completed': len(results_data)
+    })
+
+
+@login_required
 @require_http_methods(["POST"])
 def delete_test(request, test_id):
     if request.user.profile.role != 'teacher':

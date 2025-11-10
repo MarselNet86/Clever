@@ -23,7 +23,7 @@
                         <span class="label-text font-medium text-gray-700">Имя пользователя</span>
                     </label>
                     <input type="text" name="username" placeholder="Введите имя пользователя"
-                        class="input input-bordered w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                        class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition"
                         required />
                     {% if form.username.errors %}
                     <label class="label">
@@ -38,7 +38,7 @@
                         <span class="label-text font-medium text-gray-700">Email</span>
                     </label>
                     <input type="email" name="email" placeholder="example@email.com"
-                        class="input input-bordered w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                        class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition"
                         required />
                     {% if form.email.errors %}
                     <label class="label">
@@ -53,7 +53,7 @@
                         <span class="label-text font-medium text-gray-700">Пароль</span>
                     </label>
                     <input type="password" name="password" placeholder="Введите пароль"
-                        class="input input-bordered w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                        class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition"
                         required />
                     {% if form.password.errors %}
                     <label class="label">
@@ -68,7 +68,7 @@
                         <span class="label-text font-medium text-gray-700">Роль</span>
                     </label>
                     <select name="role" id="roleSelect"
-                        class="select select-bordered w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                        class="select select-bordered h-[46px] rounded-xl px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition bg-white"
                         required>
                         <option value="">Выберите роль</option>
                         {% for value, label in form.role.field.choices %}
@@ -88,7 +88,7 @@
                         <span class="label-text font-medium text-gray-700">Группа</span>
                     </label>
                     <select name="group" id="groupInput"
-                        class="select select-bordered w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2">
+                        class="select select-bordered h-[46px] rounded-xl px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition bg-white">
                         <option value="">Выберите группу</option>
                         {% for g in groups %}
                         <option value="{{ g.id }}">{{ g.name }}</option>
@@ -111,7 +111,7 @@
                 <!-- Кнопка отправки -->
                 <div class="form-control mt-6">
                     <button type="submit"
-                        class="btn w-full text-white border-none hover:bg-brand-green-hover transition-colors"
+                        class="w-full bg-brand-green hover:bg-brand-green-hover text-white font-semibold py-3 px-4 rounded-xl transition shadow-sm hover:shadow-md flex items-center justify-center gap-2"
                         style="background-color: #1B7D4A;">
                         Зарегистрироваться
                     </button>
