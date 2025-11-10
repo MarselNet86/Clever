@@ -12,7 +12,7 @@
                 <h2 class="text-2xl font-bold text-brand-green-dark">Создание группы</h2>
             </div>
 
-            <form method="post" action="{% url 'main:create_group' %}" onsubmit="return stayHere(event)">
+            <form method="post" action="{% url 'main:create_group' %}">
                 {% csrf_token %}
 
                 <div class="form-control mb-6">

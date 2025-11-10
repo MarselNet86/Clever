@@ -338,6 +338,9 @@ def submit_test(request, test_id):
 
 
 def register_view(request):
+    if request.user.is_authenticated:
+        return redirect('main:home')
+    
     groups = Group.objects.all().order_by('name')
 
     if request.method == 'POST':
@@ -369,6 +372,9 @@ def register_view(request):
 
 
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('main:home')
+    
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():

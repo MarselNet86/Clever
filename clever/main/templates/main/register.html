@@ -67,8 +67,9 @@
                     <label class="label">
                         <span class="label-text font-medium text-gray-700">Роль</span>
                     </label>
+                    <br>
                     <select name="role" id="roleSelect"
-                        class="select select-bordered h-[46px] rounded-xl px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition bg-white"
+                        class="select select-bordered h-[46px] w-full rounded-xl px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition bg-white"
                         required>
                         <option value="">Выберите роль</option>
                         {% for value, label in form.role.field.choices %}
@@ -87,8 +88,9 @@
                     <label class="label">
                         <span class="label-text font-medium text-gray-700">Группа</span>
                     </label>
+                    <br>
                     <select name="group" id="groupInput"
-                        class="select select-bordered h-[46px] rounded-xl px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition bg-white">
+                        class="select select-bordered h-[46px] w-full rounded-xl px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition bg-white">
                         <option value="">Выберите группу</option>
                         {% for g in groups %}
                         <option value="{{ g.id }}">{{ g.name }}</option>

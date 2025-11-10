@@ -24,7 +24,7 @@
     <div id="content">
         <!-- Header -->
 
-        {% if request.user.username %}
+        {% if request.user.is_authenticated %}
         <div class="bg-brand-green-dark text-white shadow-lg">
             <div class="container mx-auto px-6 h-16 flex items-center justify-between">
                 <div class="flex items-center gap-3">
