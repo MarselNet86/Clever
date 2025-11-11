@@ -6,7 +6,7 @@ services:
     env_file:
       - .env
     volumes:
-      - .:/app
+      - ./clever:/app
       - static:/app/static
       - media:/app/media
 
