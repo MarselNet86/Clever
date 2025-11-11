@@ -20,10 +20,10 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = False
 
 if DEBUG is False:
-    ALLOWED_HOSTS = ["localhost", "schamsr5.beget.tech", "www.schamsr5.beget.tech"]
+    ALLOWED_HOSTS = ["localhost", "xrtkx.ru", "www.xrtkx.ru"]
     CSRF_TRUSTED_ORIGINS = [
-        "https://schamsr5.beget.tech",
-        "https://www.schamsr5.beget.tech",
+        "https://xrtkx.ru",
+        "https://www.xrtkx.ru",
     ]
 else:
     ALLOWED_HOSTS = ["*"]
