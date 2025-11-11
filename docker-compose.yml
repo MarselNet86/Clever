@@ -9,8 +9,6 @@ services:
       - .:/app
       - static:/app/static
       - media:/app/media
-    depends_on:
-      - db
 
   nginx:
     image: nginx:latest
@@ -26,6 +24,5 @@ services:
       - web
 
 volumes:
-  postgres_data:
   static:
   media:            
