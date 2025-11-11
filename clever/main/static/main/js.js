@@ -11,27 +11,3 @@ tailwind.config = {
         }
     }
 }
-
-
-async function stayHere(e) {
-    e.preventDefault();
-
-    const form = e.target;
-    const formData = new FormData(form);
-
-    const resp = await fetch(form.action, {
-        method: 'POST',
-        body: formData
-    });
-
-    // после ответа – НИЧЕГО НЕ ДЕЛАЕМ
-    // просто остаёмся на странице
-
-    if (!resp.ok) {
-        alert("Ошибка сохранения");
-        return false;
-    }
-
-    alert("Сохранено");
-    return false; // ← ключевой момент (нет submit)
-}
