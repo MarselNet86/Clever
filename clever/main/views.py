@@ -118,24 +118,27 @@ def create_test(request):
             if key.startswith('question_') and key.endswith('_text'):
                 num = int(key.split('_')[1])
 
+                question_type = request.POST.get(f'question_{num}_type')
                 q = Question.objects.create(
                     test=test,
                     text=request.POST.get(f'question_{num}_text'),
                     image=request.FILES.get(f'question_{num}_image'),
                     order=num,
-                    question_type=request.POST.get(f'question_{num}_type')
+                    question_type=question_type
                 )
-                
-                correct = request.POST.get(f'question_{num}_correct')
-                cnt = int(request.POST.get(f'question_{num}_answers_count'))
 
-                for i in range(1, cnt+1):
-                    AnswerOption.objects.create(
-                        question=q,
-                        text=request.POST.get(f'question_{num}_answer_{i}'),
-                        order=i,
-                        is_correct=(str(i) == str(correct))
-                    )
+                # Для тестовых вопросов сохраняем варианты ответов
+                if question_type == 'choice':
+                    correct = request.POST.get(f'question_{num}_correct')
+                    cnt = int(request.POST.get(f'question_{num}_answers_count'))
+
+                    for i in range(1, cnt + 1):
+                        AnswerOption.objects.create(
+                            question=q,
+                            text=request.POST.get(f'question_{num}_answer_{i}'),
+                            order=i,
+                            is_correct=(str(i) == str(correct))
+                        )
 
     return redirect('main:teacher_home')
 

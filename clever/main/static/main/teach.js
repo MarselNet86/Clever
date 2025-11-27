@@ -156,10 +156,15 @@ document.getElementById('addQuestionBtn').addEventListener('click', function () 
             // Убираем required с select правильного ответа
             const correctSelect = block.querySelector(`#correctSelect_${questionCounter}`);
             correctSelect.removeAttribute('required');
+            correctSelect.setAttribute('disabled', 'disabled');
+            correctSelect.value = "";
 
             // Убираем required со всех input вариантов ответов
             const answerInputs = block.querySelectorAll('input[name^="question_"][name$="_answer_"]');
-            answerInputs.forEach(input => input.removeAttribute('required'));
+            answerInputs.forEach(input => {
+                input.removeAttribute('required');
+                input.setAttribute('disabled', 'disabled');
+            });
         } else {
             // Показываем варианты ответов и правильный ответ
             answersContainer.classList.remove("hidden");
@@ -167,11 +172,15 @@ document.getElementById('addQuestionBtn').addEventListener('click', function () 
 
             // Возвращаем required
             const correctSelect = block.querySelector(`#correctSelect_${questionCounter}`);
+            correctSelect.removeAttribute('disabled');
             correctSelect.setAttribute('required', 'required');
 
             // Возвращаем required для input вариантов ответов
             const answerInputs = block.querySelectorAll('input[name^="question_"][name$="_answer_"]');
-            answerInputs.forEach(input => input.setAttribute('required', 'required'));
+            answerInputs.forEach(input => {
+                input.removeAttribute('disabled');
+                input.setAttribute('required', 'required');
+            });
         }
     });
 
