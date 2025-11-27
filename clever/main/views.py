@@ -6,10 +6,13 @@ from django.views.decorators.http import require_http_methods
 from django.db.models import Avg, Count, Q
 import json
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 from .forms import RegisterForm, LoginForm
 from .models import UserProfile, Test, Question, AnswerOption, Group, TestResult, UserAnswer
+
+
+User = get_user_model()
 
 
 @login_required
@@ -31,7 +34,7 @@ def teacher_home(request):
     
     # Получаем все тесты преподавателя с аннотациями
     my_tests = Test.objects.filter(created_by=request.user).prefetch_related(
-        'questions', 'results', 'group'
+        'questions', 'results', 'groups'
     ).annotate(
         results_count=Count('results'),
         avg_score=Avg('results__score')
@@ -100,16 +103,17 @@ def create_test(request):
         return redirect('main:home')
 
     if request.method == 'POST':
-        group_id = request.POST.get('group_id')
-        group = get_object_or_404(Group, id=group_id, created_by=request.user)
+        group_ids = request.POST.getlist("group_ids")
 
         test = Test.objects.create(
             created_by=request.user,
-            group=group,
             title=request.POST.get('test_title'),
             description=request.POST.get('test_description') or ''
         )
 
+        test.groups.set(group_ids)
+
+        # — Вопросы сохраняются как раньше —
         for key in request.POST.keys():
             if key.startswith('question_') and key.endswith('_text'):
                 num = int(key.split('_')[1])
@@ -118,9 +122,10 @@ def create_test(request):
                     test=test,
                     text=request.POST.get(f'question_{num}_text'),
                     image=request.FILES.get(f'question_{num}_image'),
-                    order=num
+                    order=num,
+                    question_type=request.POST.get(f'question_{num}_type')
                 )
-
+                
                 correct = request.POST.get(f'question_{num}_correct')
                 cnt = int(request.POST.get(f'question_{num}_answers_count'))
 
@@ -270,71 +275,100 @@ def start_test(request, test_id):
 def submit_test(request, test_id):
     if request.user.profile.role != 'student':
         return JsonResponse({'error': 'Access denied'}, status=403)
-    
+
     test = get_object_or_404(Test, id=test_id, group=request.user.profile.group)
-    
-    # Проверяем, не прошел ли студент уже этот тест
+
+    # Нельзя проходить один тест дважды
     if TestResult.objects.filter(test=test, student=request.user).exists():
         return JsonResponse({'error': 'Тест уже пройден'}, status=400)
-    
+
     data = json.loads(request.body)
-    
+
+    # Создаем запись результата
     test_result = TestResult.objects.create(
         test=test,
         student=request.user,
         time_spent=data.get('time_spent', 0)
     )
-    
+
     correct_count = 0
     total_count = 0
     details = []
-    
+
+    # Основной цикл по вопросам
     for question in test.questions.all().order_by('order'):
         total_count += 1
-        user_answer_id = data['answers'].get(str(question.id))
-        
-        if user_answer_id:
-            answer = get_object_or_404(AnswerOption, id=user_answer_id, question=question)
-            
+        q_id = str(question.id)
+
+        # Ответ пользователя (для открытого = текст, для тестового = айди варианта)
+        user_raw_answer = data['answers'].get(q_id)
+
+        # --- ОТКРЫТЫЕ ВОПРОСЫ ---
+        if question.question_type == "open":
+
             UserAnswer.objects.create(
                 test_result=test_result,
                 question=question,
-                selected_answer=answer
+                selected_answer=None,
+                text_answer=user_raw_answer or ""   # сохраняем текст
             )
-            
-            is_correct = answer.is_correct
-            if is_correct:
-                correct_count += 1
-            
-            correct_answer = question.answers.filter(is_correct=True).first()
-            
+
+            # Для открытых вопросов балл = 0 (проверка вручную)
             details.append({
                 'question_text': question.text,
-                'user_answer': answer.text,
-                'correct_answer': correct_answer.text if correct_answer else '',
-                'is_correct': is_correct
-            })
-        else:
-            correct_answer = question.answers.filter(is_correct=True).first()
-            details.append({
-                'question_text': question.text,
-                'user_answer': 'Нет ответа',
-                'correct_answer': correct_answer.text if correct_answer else '',
+                'user_answer': user_raw_answer or "Нет ответа",
+                'correct_answer': "",
                 'is_correct': False
             })
-    
+
+            continue  # переходим к следующему вопросу
+
+        # --- ТЕСТОВЫЕ ВОПРОСЫ (CHOICE) ---
+        if question.question_type == "choice":
+
+            if user_raw_answer:
+                try:
+                    answer_obj = AnswerOption.objects.get(
+                        id=user_raw_answer,
+                        question=question
+                    )
+                except AnswerOption.DoesNotExist:
+                    answer_obj = None
+            else:
+                answer_obj = None
+
+            # Сохраняем ответ
+            UserAnswer.objects.create(
+                test_result=test_result,
+                question=question,
+                selected_answer=answer_obj,
+                text_answer=None
+            )
+
+            # Определяем корректность
+            correct_option = question.answers.filter(is_correct=True).first()
+            is_correct = answer_obj.is_correct if answer_obj else False
+
+            if is_correct:
+                correct_count += 1
+
+            details.append({
+                'question_text': question.text,
+                'user_answer': answer_obj.text if answer_obj else "Нет ответа",
+                'correct_answer': correct_option.text if correct_option else "",
+                'is_correct': is_correct
+            })
+
+    # Сохраняем результат
     test_result.score = correct_count
     test_result.total_questions = total_count
     test_result.save()
-    
+
     return JsonResponse({
         'correct': correct_count,
         'total': total_count,
         'details': details
     })
-
-
-
 
 
 def register_view(request):
@@ -379,14 +413,14 @@ def login_view(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             user = authenticate(
-                username=form.cleaned_data['username'],
+                email=form.cleaned_data['email'],
                 password=form.cleaned_data['password'],
             )
             if user:
                 login(request, user)
                 return redirect('main:home')
             else:
-                return render(request, 'main/login.html', {'form': form, 'error': 'неверные данные'})
+                return render(request, 'main/login.html', {'form': form, 'error': 'Неверные данные'})
     else:
         form = LoginForm()
 

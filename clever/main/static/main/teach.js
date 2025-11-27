@@ -91,8 +91,21 @@ document.getElementById('addQuestionBtn').addEventListener('click', function () 
                         class="file-input file-input-bordered border border-gray-300 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-brand-green" />
                 </div>
 
-                <!-- Варианты ответов -->
-                <div class="mb-4">
+                <!-- Тип вопроса -->
+                <div class="flex gap-4 items-center mb-3">
+                    <span class="text-sm font-medium text-gray-700">Тип вопроса:</span>
+
+                    <select name="question_${questionCounter}_type"
+                            class="question-type select select-bordered border border-gray-300 rounded-xl flex-1 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                            data-question-num="${questionCounter}">
+                        <option value="choice">Тестовый вопрос</option>
+                        <option value="open">Открытый вопрос</option>
+                    </select>
+                </div>
+
+
+                <!-- Варианты ответов (только для тестовых вопросов) -->
+                <div class="answers-container mb-4">
                     <label class="label">
                         <span class="label-text font-medium text-gray-700">Варианты ответов (макс. 5)</span>
                     </label>
@@ -105,8 +118,8 @@ document.getElementById('addQuestionBtn').addEventListener('click', function () 
                     </button>
                 </div>
 
-                <!-- Правильный ответ -->
-                <div class="form-control">
+                <!-- Правильный ответ (только для тестовых вопросов) -->
+                <div class="correct-answer-container form-control">
                     <label class="label">
                         <span class="label-text font-medium text-gray-700">Правильный ответ</span>
                     </label>
@@ -126,6 +139,42 @@ document.getElementById('addQuestionBtn').addEventListener('click', function () 
             </div>
         `;
     document.getElementById('questionsContainer').insertAdjacentHTML('beforeend', questionHTML);
+
+    // Находим только что добавленный блок
+    const block = document.querySelector(`[data-question="${questionCounter}"]`);
+    const typeSelect = block.querySelector(".question-type");
+    const answersContainer = block.querySelector(".answers-container");
+    const correctAnswerContainer = block.querySelector(".correct-answer-container");
+
+    // Обработчик переключения типа вопроса
+    typeSelect.addEventListener("change", function () {
+        if (this.value === "open") {
+            // Скрываем варианты ответов и правильный ответ
+            answersContainer.classList.add("hidden");
+            correctAnswerContainer.classList.add("hidden");
+
+            // Убираем required с select правильного ответа
+            const correctSelect = block.querySelector(`#correctSelect_${questionCounter}`);
+            correctSelect.removeAttribute('required');
+
+            // Убираем required со всех input вариантов ответов
+            const answerInputs = block.querySelectorAll('input[name^="question_"][name$="_answer_"]');
+            answerInputs.forEach(input => input.removeAttribute('required'));
+        } else {
+            // Показываем варианты ответов и правильный ответ
+            answersContainer.classList.remove("hidden");
+            correctAnswerContainer.classList.remove("hidden");
+
+            // Возвращаем required
+            const correctSelect = block.querySelector(`#correctSelect_${questionCounter}`);
+            correctSelect.setAttribute('required', 'required');
+
+            // Возвращаем required для input вариантов ответов
+            const answerInputs = block.querySelectorAll('input[name^="question_"][name$="_answer_"]');
+            answerInputs.forEach(input => input.setAttribute('required', 'required'));
+        }
+    });
+
     renumberQuestions();
     updateEmptyState();
 });
@@ -373,17 +422,17 @@ async function viewTestResults(testId) {
 // Отрисовка результатов в таблице
 function renderTestResults(results) {
     const tbody = document.getElementById('testDetailTableBody');
-    const noResults = document.getElementById('testDetailNoResults'); // ИЗМЕНИЛИ НАЗВАНИЕ
+    const noResults = document.getElementById('testDetailNoResults');
     const table = tbody.closest('.overflow-x-auto');
 
     if (!results || results.length === 0) {
         table.classList.add('hidden');
-        noResults.classList.remove('hidden'); // ИСПОЛЬЗУЕМ ТОЛЬКО testDetailNoResults
+        noResults.classList.remove('hidden');
         return;
     }
 
     table.classList.remove('hidden');
-    noResults.classList.add('hidden'); // ИСПОЛЬЗУЕМ ТОЛЬКО testDetailNoResults
+    noResults.classList.add('hidden');
 
     tbody.innerHTML = results.map(result => `
         <tr class="border-b border-gray-200 hover:bg-brand-green-container transition-colors result-row"
@@ -454,17 +503,14 @@ function getQuestionPlural(count) {
 }
 
 function showLoading(message = 'Загрузка...') {
-    // Добавьте свою логику показа загрузки
     console.log(message);
 }
 
 function hideLoading() {
-    // Добавьте свою логику скрытия загрузки
 }
 
 // Инициализация обработчиков событий
 document.addEventListener('DOMContentLoaded', function () {
-    // Поиск и фильтры для детальных результатов
     const searchInput = document.getElementById('testDetailSearchInput');
     const filterStatus = document.getElementById('testDetailFilterStatus');
 
@@ -476,4 +522,3 @@ document.addEventListener('DOMContentLoaded', function () {
         filterStatus.addEventListener('change', filterTestResults);
     }
 });
-

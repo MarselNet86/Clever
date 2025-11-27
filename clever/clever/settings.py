@@ -17,16 +17,16 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-if DEBUG is False:
+if DEBUG:
+    ALLOWED_HOSTS = ["*"]
+else:
     ALLOWED_HOSTS = ["localhost", "xrtkx.ru", "www.xrtkx.ru"]
     CSRF_TRUSTED_ORIGINS = [
         "https://xrtkx.ru",
         "https://www.xrtkx.ru",
     ]
-else:
-    ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -44,6 +44,9 @@ INSTALLED_APPS = [
 LOGIN_URL = 'main:login'
 LOGIN_REDIRECT_URL = 'main:home'
 LOGOUT_REDIRECT_URL = 'main:login'
+
+AUTH_USER_MODEL = "main.CustomUser"
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -78,12 +81,24 @@ WSGI_APPLICATION = 'clever.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else: 
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv("POSTGRES_DB"),
+            'USER': os.getenv("POSTGRES_USER"),
+            'PASSWORD': os.getenv("POSTGRES_PASSWORD"),
+            'HOST': os.getenv("DB_HOST", "127.0.0.1"),
+            'PORT': os.getenv("DB_PORT", "5432"),
+        }
+    }
 
 
 # Password validation
@@ -129,9 +144,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Закоментировать во время разработки
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 МБ (в байтах)
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 МБ (в байтах)
+# SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# SECURE_SSL_REDIRECT = True
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
+# FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 МБ (в байтах)
+# DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 МБ (в байтах)

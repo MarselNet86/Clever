@@ -17,21 +17,6 @@
             <form method="post" class="space-y-5">
                 {% csrf_token %}
 
-                <!-- Имя пользователя -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Имя пользователя</span>
-                    </label>
-                    <input type="text" name="username" placeholder="Введите имя пользователя"
-                        class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition"
-                        required />
-                    {% if form.username.errors %}
-                    <label class="label">
-                        <span class="label-text-alt text-error">{{ form.username.errors.0 }}</span>
-                    </label>
-                    {% endif %}
-                </div>
-
                 <!-- Email -->
                 <div class="form-control">
                     <label class="label">
@@ -47,6 +32,21 @@
                     {% endif %}
                 </div>
 
+                <!-- ФИО -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700">ФИО</span>
+                    </label>
+                    <input type="text" name="username" placeholder="Иванов Иван Иванович"
+                        class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition"
+                        required />
+                    {% if form.username.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.username.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
                 <!-- Пароль -->
                 <div class="form-control">
                     <label class="label">
@@ -58,6 +58,21 @@
                     {% if form.password.errors %}
                     <label class="label">
                         <span class="label-text-alt text-error">{{ form.password.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <!-- Подтверждение пароля -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700">Подтверждение пароля</span>
+                    </label>
+                    <input type="password" name="password_confirm" placeholder="Повторите пароль"
+                        class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition"
+                        required />
+                    {% if form.password_confirm.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.password_confirm.errors.0 }}</span>
                     </label>
                     {% endif %}
                 </div>
@@ -139,9 +154,7 @@
         const groupContainer = document.getElementById('groupContainer');
         const groupInput = document.getElementById('groupInput');
 
-        // Предполагаем, что значение для студента - 'student' или 'ST'
-        // Измените на актуальное значение из вашей модели UserProfile.ROLE_CHOICES
-        if (this.value === 'student' || this.value === 'ST') {
+        if (this.value === 'student') {
             groupContainer.classList.remove('hidden');
             groupInput.required = true;
         } else {

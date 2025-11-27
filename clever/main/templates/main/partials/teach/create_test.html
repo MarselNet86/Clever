@@ -92,18 +92,41 @@
                     <!-- Выбор группы -->
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Группа <span class="text-red-500">*</span>
+                            Группы <span class="text-red-500">*</span>
                         </label>
-                        <select id="groupSelect" name="group_id"
-                            class="select select-bordered w-full h-[46px] rounded-xl px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition bg-white"
-                            required>
 
-                            <option value="">Выберите группу</option>
+                        <!-- Контейнер выбора -->
+                        <div id="groupPicker" class="w-full border border-gray-300 rounded-xl p-3 bg-white cursor-pointer
+                focus-within:ring-2 focus-within:ring-brand-green transition">
+
+                            <div class="flex flex-wrap gap-2" id="selectedGroups">
+                                <!-- Выбранные группы будут появляться здесь -->
+                            </div>
+
+                            <div class="text-gray-400 mt-1 text-sm" id="placeholderText">
+                                Выберите одну или несколько групп
+                            </div>
+                        </div>
+
+                        <!-- Скрытый инпут, передающий данные -->
+                        <input type="hidden" name="group_ids" id="groupInput">
+
+                        <!-- Выпадающий список -->
+                        <div id="groupDropdown" class="mt-2 hidden max-h-48 overflow-auto border border-gray-200
+                rounded-xl shadow-lg bg-white z-50">
+
                             {% for g in groups %}
-                            <option value="{{ g.id }}">{{ g.name }}</option>
+                            <div class="px-4 py-2 hover:bg-brand-green-container cursor-pointer group-item"
+                                data-id="{{ g.id }}" data-name="{{ g.name }}">
+                                {{ g.name }}
+                            </div>
                             {% endfor %}
-                        </select>
+                        </div>
+
+                        <p class="text-xs text-gray-500 mt-1">Можно выбрать несколько групп</p>
                     </div>
+
+
 
                     <div class="border-t border-gray-200 pt-4 mt-6">
                         <button type="submit"
@@ -125,3 +148,78 @@
         </div>
     </form>
 </div>
+
+<script>
+    const picker = document.getElementById("groupPicker");
+    const dropdown = document.getElementById("groupDropdown");
+    const selectedContainer = document.getElementById("selectedGroups");
+    const input = document.getElementById("groupInput");
+    const placeholder = document.getElementById("placeholderText");
+
+    let selectedValues = [];
+
+    picker.addEventListener("click", () => {
+        dropdown.classList.toggle("hidden");
+    });
+
+    // Выбор группы
+    dropdown.querySelectorAll(".group-item").forEach(item => {
+        item.addEventListener("click", () => {
+            const id = item.dataset.id;
+            const name = item.dataset.name;
+
+            if (!selectedValues.includes(id)) {
+                selectedValues.push(id);
+
+                // создаём тег группы
+                const tag = document.createElement("span");
+                tag.className =
+                    "px-3 py-1 bg-brand-green text-white rounded-full text-sm flex items-center gap-2 select-none";
+                tag.innerHTML = `
+                    ${name}
+                    <button type="button"
+                            class="font-bold ml-1 hover:text-gray-200 transition"
+                            data-id="${id}">
+                        ×
+                    </button>
+                `;
+
+                selectedContainer.appendChild(tag);
+                placeholder.classList.add("hidden");
+
+                // обработчик удаления
+                const removeBtn = tag.querySelector("button");
+                removeBtn.addEventListener("click", (e) => {
+                    e.stopPropagation(); // чтобы не открывался dropdown
+
+                    const removeId = e.target.dataset.id;
+
+                    // убираем из массива
+                    selectedValues = selectedValues.filter(v => v !== removeId);
+
+                    // удаляем визуально
+                    tag.remove();
+
+                    // обновляем скрытый input
+                    input.value = selectedValues.join(",");
+
+                    // если ничего не выбрано → показать placeholder
+                    if (selectedValues.length === 0) {
+                        placeholder.classList.remove("hidden");
+                    }
+                });
+            }
+
+            input.value = selectedValues.join(",");
+            dropdown.classList.add("hidden");
+        });
+    });
+
+    // Закрытие dropdown при клике вне
+    document.addEventListener("click", (e) => {
+        if (!picker.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add("hidden");
+        }
+    });
+    
+</script>

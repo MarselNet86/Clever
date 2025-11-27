@@ -1,12 +1,44 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
+from django.conf import settings
+
+
+class CustomUser(AbstractUser):
+    # Email будет использоваться для входа
+    email = models.EmailField(
+        unique=True,
+        verbose_name="Email"
+    )
+    
+    # Username теперь хранит ФИО (не используется для входа)
+    username = models.CharField(
+        max_length=150,
+        unique=False,  # Теперь не должно быть уникальным
+        verbose_name="ФИО",
+        blank=True,  # Можно оставить пустым при создании
+    )
+    
+    # Отключаем стандартные поля
+    first_name = None
+    last_name = None
+    
+    # Указываем, что для входа используется email
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']  # Поля, которые запрашиваются при createsuperuser (кроме email и password)
+    
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+    
+    def __str__(self):
+        return f"{self.username or self.email}"
 
 
 class Group(models.Model):
     """Учебная группа"""
     name = models.CharField(max_length=50, unique=True, verbose_name='Название группы')
     created_by = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='groups_created', verbose_name='Создана преподавателем'
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='groups_created', verbose_name='Создана преподавателем'
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
 
@@ -24,12 +56,16 @@ class Test(models.Model):
     title = models.CharField(max_length=200, verbose_name='Название теста')
     description = models.TextField(blank=True, null=True, verbose_name='Описание')
     created_by = models.ForeignKey(
-        User, 
+        settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE, 
         related_name='created_tests',
         verbose_name='Создатель'
     )
-    group = models.ForeignKey('Group', on_delete=models.PROTECT, related_name='tests', verbose_name='Группа')
+    groups = models.ManyToManyField(
+        'Group',
+        related_name='tests',
+        verbose_name='Группы'
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     is_active = models.BooleanField(default=True, verbose_name='Активен')
 
@@ -43,29 +79,28 @@ class Test(models.Model):
 
 
 class Question(models.Model):
-    """Модель вопроса в тесте"""
+
+    QUESTION_TYPES = (
+        ('choice', 'Вариант ответа'),    # текущий тип
+        ('open', 'Открытый вопрос'),     # новый тип
+    )
+
     test = models.ForeignKey(
-        Test, 
-        on_delete=models.CASCADE, 
+        Test, on_delete=models.CASCADE,
         related_name='questions',
         verbose_name='Тест'
     )
     text = models.TextField(verbose_name='Текст вопроса')
-    image = models.ImageField(
-        upload_to='question_images/', 
-        blank=True, 
-        null=True,
-        verbose_name='Изображение'
-    )
-    order = models.IntegerField(default=0, verbose_name='Порядковый номер')
+    image = models.ImageField(upload_to='question_images/', blank=True, null=True)
 
-    class Meta:
-        verbose_name = 'Вопрос'
-        verbose_name_plural = 'Вопросы'
-        ordering = ['order']
+    order = models.IntegerField(default=0)
+    question_type = models.CharField(
+        max_length=10, choices=QUESTION_TYPES, default='choice',
+        verbose_name='Тип вопроса'
+    )
 
     def __str__(self):
-        return f"Вопрос {self.order}: {self.text[:50]}..."
+        return f"Q{self.order} ({self.question_type})"
 
 
 class AnswerOption(models.Model):
@@ -87,7 +122,7 @@ class AnswerOption(models.Model):
 
 class TestResult(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='results')
-    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
     total_questions = models.IntegerField(default=0)
     time_spent = models.IntegerField(default=0)  # в секундах
@@ -99,6 +134,7 @@ class TestResult(models.Model):
 
 class UserAnswer(models.Model):
     test_result = models.ForeignKey(TestResult, on_delete=models.CASCADE, related_name='answers')
+    text_answer = models.TextField(blank=True, null=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     selected_answer = models.ForeignKey(AnswerOption, on_delete=models.CASCADE)
     
@@ -115,7 +151,7 @@ class StudentTestAttempt(models.Model):
         verbose_name='Тест'
     )
     student = models.ForeignKey(
-        User, 
+        settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE, 
         related_name='test_attempts',
         verbose_name='Студент'
@@ -160,10 +196,15 @@ class StudentAnswer(models.Model):
         verbose_name='Вопрос'
     )
     selected_option = models.ForeignKey(
-        AnswerOption, 
-        on_delete=models.CASCADE,
-        verbose_name='Выбранный вариант'
+        AnswerOption, on_delete=models.CASCADE,
+        null=True, blank=True
     )
+
+    open_answer = models.TextField(
+        blank=True, null=True,
+        verbose_name="Ответ на открытый вопрос"
+    )
+
     is_correct = models.BooleanField(default=False, verbose_name='Правильно')
     answered_at = models.DateTimeField(auto_now_add=True, verbose_name='Время ответа')
 
@@ -185,11 +226,11 @@ class UserProfile(models.Model):
     )
 
     user = models.OneToOneField(
-        User, 
-        on_delete=models.CASCADE, 
-        related_name='profile',
-        verbose_name='Пользователь'
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='profile'
     )
+
     role = models.CharField(
         max_length=10, 
         choices=ROLE_CHOICES, 

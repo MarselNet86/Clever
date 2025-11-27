@@ -24,16 +24,21 @@ class QuestionInline(admin.StackedInline):
 
 @admin.register(Test)
 class TestAdmin(admin.ModelAdmin):
-    list_display = ('title', 'group', 'created_by', 'created_at', 'is_active')
-    list_filter = ('group', 'created_by', 'is_active')
+    list_display = ('title', 'get_groups', 'created_by', 'created_at', 'is_active')
+    list_filter = ('groups', 'created_by', 'is_active')
     search_fields = ('title',)
-    inlines = [QuestionInline]     # вопросы редактируются прямо в тесте
+    inlines = [QuestionInline]
+
+    def get_groups(self, obj):
+        return ", ".join(g.name for g in obj.groups.all())
+    get_groups.short_description = "Группы"
 
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('test', 'order', 'short_text')
-    list_filter = ('test',)
+    list_display = ('test', 'order', 'short_text', 'question_type')
+    list_filter = ('test', 'question_type')
+
     inlines = [AnswerOptionInline]  # варианты ответов прямо в вопросе
 
     def short_text(self, obj):
