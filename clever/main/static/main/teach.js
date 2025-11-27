@@ -25,6 +25,7 @@ function activateTab(tabId) {
     document.getElementById('createGroupContent').classList.add('hidden');
     document.getElementById('myTestsContent').classList.add('hidden');
     document.getElementById('testDetailContent').classList.add('hidden');
+    document.getElementById('levelsContent').classList.add('hidden');
 
     if (tabId === 'createTestTab') {
         document.getElementById('createTestContent').classList.remove('hidden');
@@ -35,12 +36,16 @@ function activateTab(tabId) {
     if (tabId === 'myTestsTab') {
         document.getElementById('myTestsContent').classList.remove('hidden');
     }
+    if (tabId === 'levelsTab') {
+        document.getElementById('levelsContent').classList.remove('hidden');
+    }
 }
 
 // назначаем обработчики
 document.getElementById('createTestTab').onclick = () => activateTab('createTestTab');
 document.getElementById('createGroupTab').onclick = () => activateTab('createGroupTab');
 document.getElementById('myTestsTab').onclick = () => activateTab('myTestsTab');
+document.getElementById('levelsTab').onclick = () => activateTab('levelsTab');
 
 
 
@@ -561,3 +566,22 @@ document.addEventListener('DOMContentLoaded', function () {
         filterStatus.addEventListener('change', filterTestResults);
     }
 });
+
+// ----- TAB -----
+document.getElementById("levelsTab").addEventListener("click", () => {
+    hideAllTabs();
+    document.getElementById("levelsContent").classList.remove("hidden");
+
+    setActiveTab("levelsTab");
+});
+
+// ----- MODAL -----
+const modal = document.getElementById("createLevelModal");
+
+document.getElementById("openCreateLevelModal").onclick = () => {
+    modal.classList.remove("hidden");
+};
+
+document.getElementById("closeCreateLevelModal").onclick = () => {
+    modal.classList.add("hidden");
+};

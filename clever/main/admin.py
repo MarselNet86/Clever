@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     Group, Test, Question, AnswerOption,
-    StudentTestAttempt, StudentAnswer, UserProfile
+    StudentTestAttempt, StudentAnswer, UserProfile, PerformanceLevel
 )
 
 
@@ -70,3 +70,10 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'role', 'group')
     list_filter = ('role', 'group')
     search_fields = ('user__username',)
+
+
+@admin.register(PerformanceLevel)
+class PerformanceLevelAdmin(admin.ModelAdmin):
+    list_display = ("name", "min_percentage", "max_percentage")
+    list_editable = ("min_percentage", "max_percentage")
+    search_fields = ("name",)
