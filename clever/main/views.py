@@ -103,7 +103,9 @@ def create_test(request):
         return redirect('main:home')
 
     if request.method == 'POST':
-        group_ids = request.POST.getlist("group_ids")
+        # ИСПРАВЛЕНИЕ ЗДЕСЬ ↓
+        group_ids_str = request.POST.get("group_ids", "")
+        group_ids = [gid.strip() for gid in group_ids_str.split(",") if gid.strip()]
 
         test = Test.objects.create(
             created_by=request.user,
@@ -113,7 +115,7 @@ def create_test(request):
 
         test.groups.set(group_ids)
 
-        # — Вопросы сохраняются как раньше —
+        # Остальной код остается без изменений
         for key in request.POST.keys():
             if key.startswith('question_') and key.endswith('_text'):
                 num = int(key.split('_')[1])

@@ -61,31 +61,38 @@ function updateQuestionTypeState(block, typeValue) {
     const answersContainer = block.querySelector(".answers-container");
     const correctAnswerContainer = block.querySelector(".correct-answer-container");
     const correctSelect = block.querySelector('[id^="correctSelect_"]');
-    const answerInputs = block.querySelectorAll('input[name^="question_"][name$="_answer_"]');
+    const answerInputs = block.querySelectorAll('input[name^="question_"][name*="_answer_"]');
 
     if (typeValue === "open") {
+        // Скрываем контейнеры
         answersContainer?.classList.add("hidden");
         correctAnswerContainer?.classList.add("hidden");
 
+        // Отключаем валидацию для select
         if (correctSelect) {
             correctSelect.removeAttribute('required');
             correctSelect.setAttribute('disabled', 'disabled');
             correctSelect.value = "";
         }
 
+        // Отключаем валидацию для всех полей ответов
         answerInputs.forEach(input => {
             input.removeAttribute('required');
             input.setAttribute('disabled', 'disabled');
+            input.value = ""; // Очищаем значение
         });
     } else {
+        // Показываем контейнеры
         answersContainer?.classList.remove("hidden");
         correctAnswerContainer?.classList.remove("hidden");
 
+        // Включаем валидацию для select
         if (correctSelect) {
             correctSelect.removeAttribute('disabled');
             correctSelect.setAttribute('required', 'required');
         }
 
+        // Включаем валидацию для всех полей ответов
         answerInputs.forEach(input => {
             input.removeAttribute('disabled');
             input.setAttribute('required', 'required');
@@ -93,95 +100,86 @@ function updateQuestionTypeState(block, typeValue) {
     }
 }
 
+
 // Добавление нового вопроса
 document.getElementById('addQuestionBtn').addEventListener('click', function () {
-
     questionCounter++;
     const questionHTML = `
-            <div class="question-block border border-gray-300 rounded-xl p-6 relative" data-question="${questionCounter}">
-                <!-- Кнопка удаления вопроса -->
-                <button type="button" class="btn btn-circle btn-sm rounded-xl absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white border-none"
-                    onclick="removeQuestion(${questionCounter})">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+        <div class="question-block border border-gray-300 rounded-xl p-6 relative" data-question="${questionCounter}">
+            <button type="button" class="btn btn-circle btn-sm rounded-xl absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white border-none"
+                onclick="removeQuestion(${questionCounter})">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
 
-                <h4 class="text-lg font-bold text-brand-green-dark mb-4 question-title">Вопрос ${questionCounter}</h4>
+            <h4 class="text-lg font-bold text-brand-green-dark mb-4 question-title">Вопрос ${questionCounter}</h4>
 
-                <!-- Текст вопроса -->
-                <div class="form-control mb-4">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Текст вопроса</span>
-                    </label>
-                    <textarea name="question_${questionCounter}_text" placeholder="Введите текст вопроса"
-                        class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition resize-none"
-                        rows="2" required></textarea>
-                </div>
-
-                <!-- Картинка (необязательно) -->
-                <div class="form-control mb-4">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Картинка (необязательно)</span>
-                    </label>
-                    <input type="file" name="question_${questionCounter}_image" accept="image/*"
-                        class="file-input file-input-bordered border border-gray-300 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-brand-green" />
-                </div>
-
-                <!-- Тип вопроса -->
-                <div class="flex gap-4 items-center mb-3">
-                    <span class="text-sm font-medium text-gray-700">Тип вопроса:</span>
-
-                    <select name="question_${questionCounter}_type"
-                            class="question-type select select-bordered border border-gray-300 rounded-xl flex-1 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
-                            data-question-num="${questionCounter}">
-                        <option value="choice">Тестовый вопрос</option>
-                        <option value="open">Открытый вопрос</option>
-                    </select>
-                </div>
-
-
-                <!-- Варианты ответов (только для тестовых вопросов) -->
-                <div class="answers-container mb-4">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Варианты ответов (макс. 5)</span>
-                    </label>
-                    <div class="space-y-2" id="answers_${questionCounter}">
-                        ${generateAnswerInputs(questionCounter, 4)}
-                    </div>
-                    <button type="button" class="btn btn-sm rounded-xl bg-brand-green-light hover:bg-brand-green text-white border-none mt-2 p-2"
-                        onclick="addAnswer(${questionCounter})" id="addAnswerBtn_${questionCounter}">
-                        Добавить вариант
-                    </button>
-                </div>
-
-                <!-- Правильный ответ (только для тестовых вопросов) -->
-                <div class="correct-answer-container form-control">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Правильный ответ</span>
-                    </label>
-                    <br>
-                    <select name="question_${questionCounter}_correct" 
-                        class="select select-bordered h-[46px] rounded-xl px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition bg-white"
-                        required id="correctSelect_${questionCounter}">
-                        <option value="">Выберите правильный ответ</option>
-                        <option value="1">Вариант 1</option>
-                        <option value="2">Вариант 2</option>
-                        <option value="3">Вариант 3</option>
-                        <option value="4">Вариант 4</option>
-                    </select>
-                </div>
-
-                <input type="hidden" name="question_${questionCounter}_answers_count" value="4" id="answersCount_${questionCounter}">
+            <div class="form-control mb-4">
+                <label class="label">
+                    <span class="label-text font-medium text-gray-700">Текст вопроса</span>
+                </label>
+                <textarea name="question_${questionCounter}_text" placeholder="Введите текст вопроса"
+                    class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition resize-none"
+                    rows="2" required></textarea>
             </div>
-        `;
+
+            <div class="form-control mb-4">
+                <label class="label">
+                    <span class="label-text font-medium text-gray-700">Картинка (необязательно)</span>
+                </label>
+                <input type="file" name="question_${questionCounter}_image" accept="image/*"
+                    class="file-input file-input-bordered border border-gray-300 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-brand-green" />
+            </div>
+
+            <div class="flex gap-4 items-center mb-3">
+                <span class="text-sm font-medium text-gray-700">Тип вопроса:</span>
+                <select name="question_${questionCounter}_type"
+                        class="question-type select select-bordered border border-gray-300 rounded-xl flex-1 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                        data-question-num="${questionCounter}">
+                    <option value="choice">Тестовый вопрос</option>
+                    <option value="open">Открытый вопрос</option>
+                </select>
+            </div>
+
+            <div class="answers-container mb-4">
+                <label class="label">
+                    <span class="label-text font-medium text-gray-700">Варианты ответов (макс. 5)</span>
+                </label>
+                <div class="space-y-2" id="answers_${questionCounter}">
+                    ${generateAnswerInputs(questionCounter, 4)}
+                </div>
+                <button type="button" class="btn btn-sm rounded-xl bg-brand-green-light hover:bg-brand-green text-white border-none mt-2 p-2"
+                    onclick="addAnswer(${questionCounter})" id="addAnswerBtn_${questionCounter}">
+                    Добавить вариант
+                </button>
+            </div>
+
+            <div class="correct-answer-container form-control">
+                <label class="label">
+                    <span class="label-text font-medium text-gray-700">Правильный ответ</span>
+                </label>
+                <br>
+                <select name="question_${questionCounter}_correct" 
+                    class="select select-bordered h-[46px] rounded-xl px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition bg-white"
+                    required id="correctSelect_${questionCounter}">
+                    <option value="">Выберите правильный ответ</option>
+                    <option value="1">Вариант 1</option>
+                    <option value="2">Вариант 2</option>
+                    <option value="3">Вариант 3</option>
+                    <option value="4">Вариант 4</option>
+                </select>
+            </div>
+
+            <input type="hidden" name="question_${questionCounter}_answers_count" value="4" id="answersCount_${questionCounter}">
+        </div>
+    `;
+
     document.getElementById('questionsContainer').insertAdjacentHTML('beforeend', questionHTML);
 
-    // Находим только что добавленный блок
     const block = document.querySelector(`[data-question="${questionCounter}"]`);
     const typeSelect = block.querySelector(".question-type");
 
-    // Обработчик переключения типа вопроса
     typeSelect.addEventListener("change", function () {
         updateQuestionTypeState(block, this.value);
     });
@@ -323,12 +321,25 @@ document.getElementById('addQuestionBtn').click();
 // Гарантируем корректное состояние открытых вопросов перед отправкой формы
 const testForm = document.getElementById('testForm');
 if (testForm) {
-    testForm.addEventListener('submit', () => {
+    testForm.addEventListener('submit', function (e) {
         const questionBlocks = document.querySelectorAll('.question-block');
+
         questionBlocks.forEach(block => {
             const typeSelect = block.querySelector('.question-type');
-            if (typeSelect) {
-                updateQuestionTypeState(block, typeSelect.value);
+            if (typeSelect && typeSelect.value === 'open') {
+                // Для открытых вопросов принудительно убираем required со всех полей ответов
+                const answerInputs = block.querySelectorAll('input[name^="question_"][name*="_answer_"]');
+                const correctSelect = block.querySelector('[id^="correctSelect_"]');
+
+                answerInputs.forEach(input => {
+                    input.removeAttribute('required');
+                    input.setAttribute('disabled', 'disabled');
+                });
+
+                if (correctSelect) {
+                    correctSelect.removeAttribute('required');
+                    correctSelect.setAttribute('disabled', 'disabled');
+                }
             }
         });
     });
