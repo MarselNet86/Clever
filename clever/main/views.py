@@ -9,7 +9,11 @@ import json
 from django.contrib.auth import get_user_model
 
 from .forms import RegisterForm, LoginForm
-from .models import UserProfile, Test, Question, AnswerOption, Group, TestResult, UserAnswer
+from .models import (UserProfile, 
+                     Test, Question, 
+                     AnswerOption, Group, 
+                     TestResult, UserAnswer, 
+                     PerformanceLevel)
 
 
 User = get_user_model()
@@ -31,7 +35,8 @@ def teacher_home(request):
         return redirect('main:home')
 
     groups = Group.objects.filter(created_by=request.user).order_by('name')
-    
+    performance_levels = PerformanceLevel.objects.all().order_by('min_percentage')
+
     # Получаем все тесты преподавателя с аннотациями
     my_tests = Test.objects.filter(created_by=request.user).prefetch_related(
         'questions', 'results', 'groups'
@@ -75,6 +80,7 @@ def teacher_home(request):
         'groups': groups,
         'my_tests': my_tests,
         'results_data': results_data,
+        'performance_levels': performance_levels,
     })
 
 
@@ -98,12 +104,30 @@ def create_group(request):
 
 
 @login_required
+def create_level(request):
+    if request.user.profile.role != 'teacher':
+        return redirect('main:home')
+    
+    if request.method == "POST":
+        PerformanceLevel.objects.create(
+            name=request.POST.get("name"),
+            min_percentage=request.POST.get("min_percentage"),
+            max_percentage=request.POST.get("max_percentage"),
+            description=request.POST.get("description"),
+            recommendations=request.POST.get("recommendations"),
+        )
+        return redirect("main:teacher_home")
+
+
+@login_required
 def create_test(request):
     if request.user.profile.role != 'teacher':
         return redirect('main:home')
 
     if request.method == 'POST':
-        group_ids = request.POST.getlist("group_ids")
+        # ИСПРАВЛЕНИЕ ЗДЕСЬ ↓
+        group_ids_str = request.POST.get("group_ids", "")
+        group_ids = [gid.strip() for gid in group_ids_str.split(",") if gid.strip()]
 
         test = Test.objects.create(
             created_by=request.user,
@@ -113,29 +137,32 @@ def create_test(request):
 
         test.groups.set(group_ids)
 
-        # — Вопросы сохраняются как раньше —
+        # Остальной код остается без изменений
         for key in request.POST.keys():
             if key.startswith('question_') and key.endswith('_text'):
                 num = int(key.split('_')[1])
 
+                question_type = request.POST.get(f'question_{num}_type')
                 q = Question.objects.create(
                     test=test,
                     text=request.POST.get(f'question_{num}_text'),
                     image=request.FILES.get(f'question_{num}_image'),
                     order=num,
-                    question_type=request.POST.get(f'question_{num}_type')
+                    question_type=question_type
                 )
-                
-                correct = request.POST.get(f'question_{num}_correct')
-                cnt = int(request.POST.get(f'question_{num}_answers_count'))
 
-                for i in range(1, cnt+1):
-                    AnswerOption.objects.create(
-                        question=q,
-                        text=request.POST.get(f'question_{num}_answer_{i}'),
-                        order=i,
-                        is_correct=(str(i) == str(correct))
-                    )
+                # Для тестовых вопросов сохраняем варианты ответов
+                if question_type == 'choice':
+                    correct = request.POST.get(f'question_{num}_correct')
+                    cnt = int(request.POST.get(f'question_{num}_answers_count'))
+
+                    for i in range(1, cnt + 1):
+                        AnswerOption.objects.create(
+                            question=q,
+                            text=request.POST.get(f'question_{num}_answer_{i}'),
+                            order=i,
+                            is_correct=(str(i) == str(correct))
+                        )
 
     return redirect('main:teacher_home')
 
@@ -202,9 +229,18 @@ def student_home(request):
         return redirect('main:home')
     
     student_group = request.user.profile.group
-    tests = Test.objects.filter(group=student_group).prefetch_related('questions').order_by('-created_at')
+
+    # Получаем тесты по связанной группе
+    tests = (
+        Test.objects.filter(groups=student_group)
+        .prefetch_related('questions')
+        .order_by('-created_at')
+    )
     
-    completed_tests = TestResult.objects.filter(student=request.user).values_list('test_id', flat=True)
+    completed_tests = (
+        TestResult.objects.filter(student=request.user)
+        .values_list('test_id', flat=True)
+    )
     
     tests_data = []
     for test in tests:
@@ -240,7 +276,7 @@ def start_test(request, test_id):
     if request.user.profile.role != 'student':
         return JsonResponse({'error': 'Access denied'}, status=403)
     
-    test = get_object_or_404(Test, id=test_id, group=request.user.profile.group)
+    test = get_object_or_404(Test, id=test_id, groups=request.user.profile.group)
     
     # Проверяем, не прошел ли студент уже этот тест
     if TestResult.objects.filter(test=test, student=request.user).exists():
@@ -257,16 +293,17 @@ def start_test(request, test_id):
                 'id': q.id,
                 'text': q.text,
                 'image': q.image.url if q.image else None,
+                'question_type': q.question_type,  # ← ДОБАВЬТЕ ЭТУ СТРОКУ
                 'answers': [
                     {
                         'id': a.id,
                         'text': a.text
                     } for a in q.answers.all().order_by('order')
-                ]
+                ] if q.question_type == 'choice' else []  # ← И ДОБАВЬТЕ ПРОВЕРКУ ЗДЕСЬ
             } for q in questions
         ]
     }
-    
+        
     return JsonResponse(data)
 
 
@@ -276,7 +313,7 @@ def submit_test(request, test_id):
     if request.user.profile.role != 'student':
         return JsonResponse({'error': 'Access denied'}, status=403)
 
-    test = get_object_or_404(Test, id=test_id, group=request.user.profile.group)
+    test = get_object_or_404(Test, id=test_id, groups=request.user.profile.group)
 
     # Нельзя проходить один тест дважды
     if TestResult.objects.filter(test=test, student=request.user).exists():
@@ -292,83 +329,109 @@ def submit_test(request, test_id):
     )
 
     correct_count = 0
-    total_count = 0
+    total_count = 0              # ВСЕ вопросы
+    auto_count = 0               # Только тестовые
     details = []
+    open_count = 0               # Открытые вопросы
 
     # Основной цикл по вопросам
     for question in test.questions.all().order_by('order'):
         total_count += 1
         q_id = str(question.id)
 
-        # Ответ пользователя (для открытого = текст, для тестового = айди варианта)
+        # Ответ пользователя
         user_raw_answer = data['answers'].get(q_id)
 
-        # --- ОТКРЫТЫЕ ВОПРОСЫ ---
+        # ----------------------------------------------------
+        # 1) ОТКРЫТЫЙ ВОПРОС
+        # ----------------------------------------------------
         if question.question_type == "open":
+            open_count += 1
 
             UserAnswer.objects.create(
                 test_result=test_result,
                 question=question,
                 selected_answer=None,
-                text_answer=user_raw_answer or ""   # сохраняем текст
+                text_answer=user_raw_answer or ""
             )
 
-            # Для открытых вопросов балл = 0 (проверка вручную)
             details.append({
                 'question_text': question.text,
                 'user_answer': user_raw_answer or "Нет ответа",
-                'correct_answer': "",
-                'is_correct': False
+                'correct_answer': "Проверяется преподавателем",
+                'is_correct': None,        # ВАЖНО: None → JS считает «нейтральным»
+                'is_open': True
             })
 
-            continue  # переходим к следующему вопросу
+            continue
 
-        # --- ТЕСТОВЫЕ ВОПРОСЫ (CHOICE) ---
-        if question.question_type == "choice":
+        # ----------------------------------------------------
+        # 2) ТЕСТОВЫЙ ВОПРОС
+        # ----------------------------------------------------
+        auto_count += 1
 
-            if user_raw_answer:
-                try:
-                    answer_obj = AnswerOption.objects.get(
-                        id=user_raw_answer,
-                        question=question
-                    )
-                except AnswerOption.DoesNotExist:
-                    answer_obj = None
-            else:
+        if user_raw_answer:
+            try:
+                answer_obj = AnswerOption.objects.get(
+                    id=user_raw_answer,
+                    question=question
+                )
+            except AnswerOption.DoesNotExist:
                 answer_obj = None
+        else:
+            answer_obj = None
 
-            # Сохраняем ответ
-            UserAnswer.objects.create(
-                test_result=test_result,
-                question=question,
-                selected_answer=answer_obj,
-                text_answer=None
-            )
+        UserAnswer.objects.create(
+            test_result=test_result,
+            question=question,
+            selected_answer=answer_obj,
+            text_answer=None
+        )
 
-            # Определяем корректность
-            correct_option = question.answers.filter(is_correct=True).first()
-            is_correct = answer_obj.is_correct if answer_obj else False
+        correct_option = question.answers.filter(is_correct=True).first()
+        is_correct = answer_obj.is_correct if answer_obj else False
 
-            if is_correct:
-                correct_count += 1
+        if is_correct:
+            correct_count += 1
 
-            details.append({
-                'question_text': question.text,
-                'user_answer': answer_obj.text if answer_obj else "Нет ответа",
-                'correct_answer': correct_option.text if correct_option else "",
-                'is_correct': is_correct
-            })
+        details.append({
+            'question_text': question.text,
+            'user_answer': answer_obj.text if answer_obj else "Нет ответа",
+            'correct_answer': correct_option.text if correct_option else "",
+            'is_correct': is_correct,
+            'is_open': False
+        })
 
-    # Сохраняем результат
+    # -------------------------------------------------------------------------
+    # РАСЧЁТ ПРОЦЕНТА — ТОЛЬКО ПО ТЕСТОВЫМ ВОПРОСАМ
+    # -------------------------------------------------------------------------
+    if auto_count > 0:
+        percentage = round((correct_count / auto_count) * 100)
+    else:
+        percentage = 0
+
+    performance_level = PerformanceLevel.objects.filter(
+        min_percentage__lte=percentage,
+        max_percentage__gte=percentage
+    ).first()
+
     test_result.score = correct_count
     test_result.total_questions = total_count
+    test_result.performance_level = performance_level
     test_result.save()
 
     return JsonResponse({
         'correct': correct_count,
-        'total': total_count,
+        'total': auto_count,                     # Сколько автоматических проверяемых
+        'total_questions': total_count,          # Сколько ВСЕГО
+        'open_count': open_count,                # Сколько открытых
+        'percentage': percentage,                # % только по choice-вопросам
+        'level': performance_level.name if performance_level else None,
+        'level_description': performance_level.description if performance_level else "",
+        'level_recommendations': performance_level.recommendations if performance_level else "",
         'details': details
     })
+
 
 
 def register_view(request):

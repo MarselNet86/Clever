@@ -120,10 +120,33 @@ class AnswerOption(models.Model):
         return f"{self.text} {'✓' if self.is_correct else ''}"
     
 
+class PerformanceLevel(models.Model):
+    name = models.CharField("Название уровня", max_length=100)
+    min_percentage = models.PositiveIntegerField("Минимальный %")
+    max_percentage = models.PositiveIntegerField("Максимальный %")
+    description = models.TextField("Описание уровня", blank=True)
+    recommendations = models.TextField("Рекомендации", blank=True)
+
+    class Meta:
+        verbose_name = "Уровень выполнения"
+        verbose_name_plural = "Уровни выполнения"
+        ordering = ['min_percentage']
+
+    def __str__(self):
+        return f"{self.name} ({self.min_percentage}-{self.max_percentage}%)"
+    
+
 class TestResult(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='results')
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
+    performance_level = models.ForeignKey(
+        PerformanceLevel,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Уровень"
+    )
     total_questions = models.IntegerField(default=0)
     time_spent = models.IntegerField(default=0)  # в секундах
     completed_at = models.DateTimeField(auto_now_add=True)
@@ -136,7 +159,14 @@ class UserAnswer(models.Model):
     test_result = models.ForeignKey(TestResult, on_delete=models.CASCADE, related_name='answers')
     text_answer = models.TextField(blank=True, null=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    selected_answer = models.ForeignKey(AnswerOption, on_delete=models.CASCADE)
+    selected_answer = models.ForeignKey(
+        AnswerOption,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='user_answers'
+    )
+
     
     class Meta:
         unique_together = ('test_result', 'question')

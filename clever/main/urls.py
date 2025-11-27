@@ -10,6 +10,7 @@ urlpatterns = [
     path('teacher/create-group/', views.create_group, name='create_group'),
     path('teacher/test/<int:test_id>/delete/', views.delete_test, name='delete_test'),
     path('teacher/test/<int:test_id>/results/', views.test_detail_results, name='test_detail_results'),
+    path('teacher/levels/create/', views.create_level, name='create_level'),
     path('student/', views.student_home, name='student_home'),
     path('student/test/<int:test_id>/start/', views.start_test, name='start_test'),
     path('student/test/<int:test_id>/submit/', views.submit_test, name='submit_test'),
