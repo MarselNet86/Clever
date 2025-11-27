@@ -56,6 +56,43 @@ function renumberQuestions() {
     });
 }
 
+// Управление состоянием вопроса в зависимости от выбранного типа
+function updateQuestionTypeState(block, typeValue) {
+    const answersContainer = block.querySelector(".answers-container");
+    const correctAnswerContainer = block.querySelector(".correct-answer-container");
+    const correctSelect = block.querySelector('[id^="correctSelect_"]');
+    const answerInputs = block.querySelectorAll('input[name^="question_"][name$="_answer_"]');
+
+    if (typeValue === "open") {
+        answersContainer?.classList.add("hidden");
+        correctAnswerContainer?.classList.add("hidden");
+
+        if (correctSelect) {
+            correctSelect.removeAttribute('required');
+            correctSelect.setAttribute('disabled', 'disabled');
+            correctSelect.value = "";
+        }
+
+        answerInputs.forEach(input => {
+            input.removeAttribute('required');
+            input.setAttribute('disabled', 'disabled');
+        });
+    } else {
+        answersContainer?.classList.remove("hidden");
+        correctAnswerContainer?.classList.remove("hidden");
+
+        if (correctSelect) {
+            correctSelect.removeAttribute('disabled');
+            correctSelect.setAttribute('required', 'required');
+        }
+
+        answerInputs.forEach(input => {
+            input.removeAttribute('disabled');
+            input.setAttribute('required', 'required');
+        });
+    }
+}
+
 // Добавление нового вопроса
 document.getElementById('addQuestionBtn').addEventListener('click', function () {
 
@@ -143,46 +180,14 @@ document.getElementById('addQuestionBtn').addEventListener('click', function () 
     // Находим только что добавленный блок
     const block = document.querySelector(`[data-question="${questionCounter}"]`);
     const typeSelect = block.querySelector(".question-type");
-    const answersContainer = block.querySelector(".answers-container");
-    const correctAnswerContainer = block.querySelector(".correct-answer-container");
 
     // Обработчик переключения типа вопроса
     typeSelect.addEventListener("change", function () {
-        if (this.value === "open") {
-            // Скрываем варианты ответов и правильный ответ
-            answersContainer.classList.add("hidden");
-            correctAnswerContainer.classList.add("hidden");
-
-            // Убираем required с select правильного ответа
-            const correctSelect = block.querySelector(`#correctSelect_${questionCounter}`);
-            correctSelect.removeAttribute('required');
-            correctSelect.setAttribute('disabled', 'disabled');
-            correctSelect.value = "";
-
-            // Убираем required со всех input вариантов ответов
-            const answerInputs = block.querySelectorAll('input[name^="question_"][name$="_answer_"]');
-            answerInputs.forEach(input => {
-                input.removeAttribute('required');
-                input.setAttribute('disabled', 'disabled');
-            });
-        } else {
-            // Показываем варианты ответов и правильный ответ
-            answersContainer.classList.remove("hidden");
-            correctAnswerContainer.classList.remove("hidden");
-
-            // Возвращаем required
-            const correctSelect = block.querySelector(`#correctSelect_${questionCounter}`);
-            correctSelect.removeAttribute('disabled');
-            correctSelect.setAttribute('required', 'required');
-
-            // Возвращаем required для input вариантов ответов
-            const answerInputs = block.querySelectorAll('input[name^="question_"][name$="_answer_"]');
-            answerInputs.forEach(input => {
-                input.removeAttribute('disabled');
-                input.setAttribute('required', 'required');
-            });
-        }
+        updateQuestionTypeState(block, this.value);
     });
+
+    // Устанавливаем правильное состояние при создании блока
+    updateQuestionTypeState(block, typeSelect.value);
 
     renumberQuestions();
     updateEmptyState();
@@ -314,6 +319,20 @@ function removeQuestion(questionNum) {
 
 // Добавляем первый вопрос автоматически
 document.getElementById('addQuestionBtn').click();
+
+// Гарантируем корректное состояние открытых вопросов перед отправкой формы
+const testForm = document.getElementById('testForm');
+if (testForm) {
+    testForm.addEventListener('submit', () => {
+        const questionBlocks = document.querySelectorAll('.question-block');
+        questionBlocks.forEach(block => {
+            const typeSelect = block.querySelector('.question-type');
+            if (typeSelect) {
+                updateQuestionTypeState(block, typeSelect.value);
+            }
+        });
+    });
+}
 
 // Функционал поиска и фильтрации
 document.addEventListener('DOMContentLoaded', function () {
