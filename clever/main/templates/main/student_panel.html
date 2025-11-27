@@ -83,7 +83,8 @@
                                 <div class="text-center">
                                     <div class="text-2xl font-bold"
                                         style="color: {% if item.result.score >= item.pass_threshold|default:0 %}#059669{% else %}#DC2626{% endif %}">
-                                        {{ item.result.score }}<span class="text-sm text-gray-500 font-normal">/{{ item.result.total_questions }}</span>
+                                        {{ item.result.score }}<span class="text-sm text-gray-500 font-normal">/{{
+                                            item.result.total_questions }}</span>
                                     </div>
                                     <div class="text-xs text-gray-600 mt-1">Правильных</div>
                                 </div>
@@ -283,7 +284,7 @@
 </div>
 
 <!-- Баннер ошибки -->
-<div id="errorBanner" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-2xl w-full mx-4">
+<div id="errorBanner" class="hidden fixed top-4 left-1/2 -translate-x-1/4 z-50 w-[90%] max-w-xl px-2 sm:px-0">
     <div class="bg-red-50 border-2 border-red-200 rounded-xl shadow-lg p-4 flex items-start gap-3">
         <svg class="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -302,6 +303,7 @@
         </button>
     </div>
 </div>
+
 
 <script>const CSRF_TOKEN = '{{ csrf_token }}';</script>
 <script src="{% static 'main/student.js' %}"></script>

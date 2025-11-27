@@ -536,6 +536,27 @@ function updateNavigationButtons() {
     }
 }
 
+function countUnansweredQuestions() {
+    let unanswered = 0;
+
+    state.currentTest.questions.forEach(q => {
+        const qid = q.id;
+
+        // Открытые вопросы всегда считаем "отвеченными"
+        if (q.question_type === 'open') {
+            return;
+        }
+
+        // Для choice-проверяем обычным способом
+        if (state.userAnswers[qid] === undefined) {
+            unanswered++;
+        }
+    });
+
+    return unanswered;
+}
+
+
 function previousQuestion() {
     if (state.currentQuestionIndex > 0) {
         showQuestion(state.currentQuestionIndex - 1);
@@ -553,7 +574,8 @@ function nextQuestion() {
 // ============================================================================
 
 function confirmFinishTest() {
-    const unanswered = state.totalQuestions - Object.keys(state.userAnswers).length;
+    const unanswered = countUnansweredQuestions();
+
 
     if (unanswered > 0) {
         elements.modalMessage.textContent = `У вас осталось ${unanswered} неотвеченных вопрос${getQuestionPlural(unanswered)}. Вы уверены, что хотите завершить тест?`;
