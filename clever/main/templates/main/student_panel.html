@@ -83,8 +83,7 @@
                                 <div class="text-center">
                                     <div class="text-2xl font-bold"
                                         style="color: {% if item.result.score >= item.pass_threshold|default:0 %}#059669{% else %}#DC2626{% endif %}">
-                                        {{ item.result.score }}<span class="text-sm text-gray-500 font-normal">/{{
-                                            item.result.total_questions }}</span>
+                                        {{ item.result.score }}<span class="text-sm text-gray-500 font-normal">/{{ item.result.total_questions }}</span>
                                     </div>
                                     <div class="text-xs text-gray-600 mt-1">Правильных</div>
                                 </div>

@@ -291,7 +291,7 @@ def submit_test(request, test_id):
     if request.user.profile.role != 'student':
         return JsonResponse({'error': 'Access denied'}, status=403)
 
-    test = get_object_or_404(Test, id=test_id, group=request.user.profile.group)
+    test = get_object_or_404(Test, id=test_id, groups=request.user.profile.group)
 
     # Нельзя проходить один тест дважды
     if TestResult.objects.filter(test=test, student=request.user).exists():
@@ -331,10 +331,11 @@ def submit_test(request, test_id):
             details.append({
                 'question_text': question.text,
                 'user_answer': user_raw_answer or "Нет ответа",
-                'correct_answer': "Проверяется преподавателем",  # ← можно изменить текст
-                'is_correct': False  # ← всегда False для открытых
+                'correct_answer': "Проверяется преподавателем",
+                'is_correct': None,
+                'is_open': True
             })
-            
+
             continue  # переходим к следующему вопросу
 
         # --- ТЕСТОВЫЕ ВОПРОСЫ (CHOICE) ---

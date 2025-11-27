@@ -651,37 +651,63 @@ function showResults(result) {
     let detailsHtml = '';
 
     result.details.forEach((detail, index) => {
+
+        const isOpen = detail.is_open === true;
         const isCorrect = detail.is_correct;
-        const borderColor = isCorrect ? 'border-green-200' : 'border-red-200';
-        const bgColor = isCorrect ? 'bg-green-50' : 'bg-red-50';
-        const dividerColor = isCorrect ? 'border-green-200' : 'border-red-200';
+
+        let icon, borderColor, bgColor, textColor, dividerColor;
+
+        if (isOpen) {
+            // Открытый вопрос → нейтральное оформление
+            icon = '📝';
+            borderColor = 'border-blue-200';
+            bgColor = 'bg-blue-50';
+            textColor = 'text-blue-700';
+            dividerColor = 'border-blue-200';
+        } else if (isCorrect) {
+            // Правильно
+            icon = '✅';
+            borderColor = 'border-green-200';
+            bgColor = 'bg-green-50';
+            textColor = 'text-green-700';
+            dividerColor = 'border-green-200';
+        } else {
+            // Неправильно
+            icon = '❌';
+            borderColor = 'border-red-200';
+            bgColor = 'bg-red-50';
+            textColor = 'text-red-700';
+            dividerColor = 'border-red-200';
+        }
 
         detailsHtml += `
         <details class="group ${bgColor} border-2 ${borderColor} rounded-xl overflow-hidden">
             <summary class="flex items-center gap-3 p-4 cursor-pointer list-none hover:bg-black/5 transition-colors">
-                <span class="text-2xl flex-shrink-0">${isCorrect ? '✅' : '❌'}</span>
+                <span class="text-2xl flex-shrink-0">${icon}</span>
                 <div class="flex-1 min-w-0">
                     <h3 class="font-semibold text-gray-900 mb-1">Вопрос ${index + 1}</h3>
                     <p class="text-sm text-gray-600 line-clamp-1">${escapeHtml(detail.question_text)}</p>
                 </div>
-                <svg class="w-5 h-5 text-gray-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                <svg class="w-5 h-5 text-gray-500 transition-transform group-open:rotate-180"
+                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 9l-7 7-7-7"/>
                 </svg>
             </summary>
-            
+
             <div class="px-4 pb-4 pt-0 border-t ${dividerColor}">
                 <div class="pt-4 space-y-3">
                     <p class="text-gray-800 font-medium">${escapeHtml(detail.question_text)}</p>
-                    
+
                     <div class="space-y-2 text-sm bg-white rounded-lg p-3 border border-gray-200">
                         <div class="flex gap-2">
                             <span class="text-gray-600 font-medium min-w-[120px]">Ваш ответ:</span>
-                            <span class="font-semibold ${isCorrect ? 'text-green-700' : 'text-red-700'}">
+                            <span class="font-semibold ${textColor}">
                                 ${escapeHtml(detail.user_answer || 'Не отвечено')}
                             </span>
                         </div>
-                        
-                        ${!isCorrect ? `
+
+                        ${(!isOpen && !isCorrect) ? `
                             <div class="flex gap-2 pt-2 border-t border-gray-200">
                                 <span class="text-gray-600 font-medium min-w-[120px]">Правильный ответ:</span>
                                 <span class="font-semibold text-green-700">
@@ -695,6 +721,7 @@ function showResults(result) {
         </details>
     `;
     });
+
 
     elements.detailedResults.innerHTML = detailsHtml;
 

@@ -136,7 +136,14 @@ class UserAnswer(models.Model):
     test_result = models.ForeignKey(TestResult, on_delete=models.CASCADE, related_name='answers')
     text_answer = models.TextField(blank=True, null=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    selected_answer = models.ForeignKey(AnswerOption, on_delete=models.CASCADE)
+    selected_answer = models.ForeignKey(
+        AnswerOption,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='user_answers'
+    )
+
     
     class Meta:
         unique_together = ('test_result', 'question')
