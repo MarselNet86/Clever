@@ -385,48 +385,72 @@ function showQuestion(index) {
         `;
     }
 
-    // Варианты ответов
-    html += `
-            <fieldset class="space-y-3" role="radiogroup" aria-label="Варианты ответа">
-                <legend class="sr-only">Выберите один вариант ответа</legend>
-    `;
-
-    question.answers.forEach((answer, answerIndex) => {
-        const isSelected = state.userAnswers[question.id] === answer.id;
-        const inputId = `answer_${question.id}_${answer.id}`;
+    // Варианты ответов или текстовое поле для открытого вопроса
+    if (question.question_type === 'open') {
+        // Открытый вопрос - текстовое поле
+        const savedAnswer = state.userAnswers[question.id] || '';
 
         html += `
-            <label 
-                for="${inputId}"
-                class="flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-150 ${isSelected
-                ? 'border-brand-green bg-brand-green-container ring-2 ring-brand-green/20'
-                : 'border-gray-200 hover:border-brand-green/50 hover:bg-gray-50'
-            }"
-                role="radio"
-                aria-checked="${isSelected}"
-            >
-                <input 
-                    type="radio" 
-                    id="${inputId}"
-                    name="question_${question.id}" 
-                    value="${answer.id}"
-                    ${isSelected ? 'checked' : ''}
+            <div class="space-y-3">
+                <label for="open_answer_${question.id}" class="block text-sm font-medium text-gray-700">
+                    Введите ваш ответ:
+                </label>
+                <textarea
+                    id="open_answer_${question.id}"
+                    name="open_answer_${question.id}"
                     data-question-id="${question.id}"
-                    data-answer-id="${answer.id}"
-                    class="radio radio-success border border-gray-300 flex-shrink-0 mt-0.5 focus:ring-2 focus:ring-brand-green focus:ring-offset-2"
-                />
-                <span class="flex-1 text-gray-800 select-none">
-                    <span class="font-medium text-gray-500 mr-2">${String.fromCharCode(65 + answerIndex)}.</span>
-                    ${escapeHtml(answer.text)}
-                </span>
-            </label>
+                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-brand-green transition resize-none"
+                    rows="5"
+                    placeholder="Напишите развёрнутый ответ на вопрос..."
+                >${escapeHtml(savedAnswer)}</textarea>
+                <p class="text-sm text-gray-500">Этот вопрос будет проверен преподавателем вручную</p>
+            </div>
         `;
-    });
+    } else {
+        // Тестовый вопрос - варианты ответов
+        html += `
+            <fieldset class="space-y-3" role="radiogroup" aria-label="Варианты ответа">
+                <legend class="sr-only">Выберите один вариант ответа</legend>
+        `;
 
-    html += `
+        question.answers.forEach((answer, answerIndex) => {
+            const isSelected = state.userAnswers[question.id] === answer.id;
+            const inputId = `answer_${question.id}_${answer.id}`;
+
+            html += `
+                <label 
+                    for="${inputId}"
+                    class="flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-150 ${isSelected
+                    ? 'border-brand-green bg-brand-green-container ring-2 ring-brand-green/20'
+                    : 'border-gray-200 hover:border-brand-green/50 hover:bg-gray-50'
+                }"
+                    role="radio"
+                    aria-checked="${isSelected}"
+                >
+                    <input 
+                        type="radio" 
+                        id="${inputId}"
+                        name="question_${question.id}" 
+                        value="${answer.id}"
+                        ${isSelected ? 'checked' : ''}
+                        data-question-id="${question.id}"
+                        data-answer-id="${answer.id}"
+                        class="radio radio-success border border-gray-300 flex-shrink-0 mt-0.5 focus:ring-2 focus:ring-brand-green focus:ring-offset-2"
+                    />
+                    <span class="flex-1 text-gray-800 select-none">
+                        <span class="font-medium text-gray-500 mr-2">${String.fromCharCode(65 + answerIndex)}.</span>
+                        ${escapeHtml(answer.text)}
+                    </span>
+                </label>
+            `;
+        });
+
+        html += `
             </fieldset>
-        </div>
-    `;
+        `;
+    }
+
+    html += `</div>`;
 
     elements.currentQuestionContainer.innerHTML = html;
 
@@ -440,6 +464,28 @@ function showQuestion(index) {
         });
     });
 
+    // Обработчик для открытых вопросов
+    const textareaInputs = elements.currentQuestionContainer.querySelectorAll('textarea[data-question-id]');
+    textareaInputs.forEach(textarea => {
+        // Сохраняем при вводе с debounce
+        let timeoutId;
+        textarea.addEventListener('input', (e) => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                const questionId = parseInt(e.target.dataset.questionId);
+                const textAnswer = e.target.value.trim();
+                saveAnswer(questionId, textAnswer);
+            }, 500);
+        });
+
+        // Немедленное сохранение при потере фокуса
+        textarea.addEventListener('blur', (e) => {
+            const questionId = parseInt(e.target.dataset.questionId);
+            const textAnswer = e.target.value.trim();
+            saveAnswer(questionId, textAnswer);
+        });
+    });
+
     // Обновление навигации
     updateNavigationButtons();
     renderQuestionNavigation();
@@ -449,8 +495,11 @@ function showQuestion(index) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function saveAnswer(questionId, answerId) {
-    state.userAnswers[questionId] = answerId;
+
+function saveAnswer(questionId, answerValue) {
+    // answerValue может быть либо answerId (число) для тестовых вопросов,
+    // либо текстом (строка) для открытых вопросов
+    state.userAnswers[questionId] = answerValue;
     saveSession();
     renderQuestionNavigation();
     updateProgress();
@@ -586,43 +635,43 @@ function showResults(result) {
         const dividerColor = isCorrect ? 'border-green-200' : 'border-red-200';
 
         detailsHtml += `
-            <details class="group ${bgColor} border-2 ${borderColor} rounded-xl overflow-hidden">
-                <summary class="flex items-center gap-3 p-4 cursor-pointer list-none hover:bg-black/5 transition-colors">
-                    <span class="text-2xl flex-shrink-0">${isCorrect ? '✅' : '❌'}</span>
-                    <div class="flex-1 min-w-0">
-                        <h3 class="font-semibold text-gray-900 mb-1">Вопрос ${index + 1}</h3>
-                        <p class="text-sm text-gray-600 line-clamp-1">${escapeHtml(detail.question_text)}</p>
-                    </div>
-                    <svg class="w-5 h-5 text-gray-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                    </svg>
-                </summary>
-                
-                <div class="px-4 pb-4 pt-0 border-t ${dividerColor}">
-                    <div class="pt-4 space-y-3">
-                        <p class="text-gray-800 font-medium">${escapeHtml(detail.question_text)}</p>
+        <details class="group ${bgColor} border-2 ${borderColor} rounded-xl overflow-hidden">
+            <summary class="flex items-center gap-3 p-4 cursor-pointer list-none hover:bg-black/5 transition-colors">
+                <span class="text-2xl flex-shrink-0">${isCorrect ? '✅' : '❌'}</span>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-semibold text-gray-900 mb-1">Вопрос ${index + 1}</h3>
+                    <p class="text-sm text-gray-600 line-clamp-1">${escapeHtml(detail.question_text)}</p>
+                </div>
+                <svg class="w-5 h-5 text-gray-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </summary>
+            
+            <div class="px-4 pb-4 pt-0 border-t ${dividerColor}">
+                <div class="pt-4 space-y-3">
+                    <p class="text-gray-800 font-medium">${escapeHtml(detail.question_text)}</p>
+                    
+                    <div class="space-y-2 text-sm bg-white rounded-lg p-3 border border-gray-200">
+                        <div class="flex gap-2">
+                            <span class="text-gray-600 font-medium min-w-[120px]">Ваш ответ:</span>
+                            <span class="font-semibold ${isCorrect ? 'text-green-700' : 'text-red-700'}">
+                                ${escapeHtml(detail.user_answer || 'Не отвечено')}
+                            </span>
+                        </div>
                         
-                        <div class="space-y-2 text-sm bg-white rounded-lg p-3 border border-gray-200">
-                            <div class="flex gap-2">
-                                <span class="text-gray-600 font-medium min-w-[120px]">Ваш ответ:</span>
-                                <span class="font-semibold ${isCorrect ? 'text-green-700' : 'text-red-700'}">
-                                    ${escapeHtml(detail.user_answer || 'Не отвечено')}
+                        ${!isCorrect ? `
+                            <div class="flex gap-2 pt-2 border-t border-gray-200">
+                                <span class="text-gray-600 font-medium min-w-[120px]">Правильный ответ:</span>
+                                <span class="font-semibold text-green-700">
+                                    ${escapeHtml(detail.correct_answer)}
                                 </span>
                             </div>
-                            
-                            ${!isCorrect ? `
-                                <div class="flex gap-2 pt-2 border-t border-gray-200">
-                                    <span class="text-gray-600 font-medium min-w-[120px]">Правильный ответ:</span>
-                                    <span class="font-semibold text-green-700">
-                                        ${escapeHtml(detail.correct_answer)}
-                                    </span>
-                                </div>
-                            ` : ''}
-                        </div>
+                        ` : ''}
                     </div>
                 </div>
-            </details>
-        `;
+            </div>
+        </details>
+    `;
     });
 
     elements.detailedResults.innerHTML = detailsHtml;

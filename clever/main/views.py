@@ -207,9 +207,18 @@ def student_home(request):
         return redirect('main:home')
     
     student_group = request.user.profile.group
-    tests = Test.objects.filter(group=student_group).prefetch_related('questions').order_by('-created_at')
+
+    # Получаем тесты по связанной группе
+    tests = (
+        Test.objects.filter(groups=student_group)
+        .prefetch_related('questions')
+        .order_by('-created_at')
+    )
     
-    completed_tests = TestResult.objects.filter(student=request.user).values_list('test_id', flat=True)
+    completed_tests = (
+        TestResult.objects.filter(student=request.user)
+        .values_list('test_id', flat=True)
+    )
     
     tests_data = []
     for test in tests:
@@ -245,7 +254,7 @@ def start_test(request, test_id):
     if request.user.profile.role != 'student':
         return JsonResponse({'error': 'Access denied'}, status=403)
     
-    test = get_object_or_404(Test, id=test_id, group=request.user.profile.group)
+    test = get_object_or_404(Test, id=test_id, groups=request.user.profile.group)
     
     # Проверяем, не прошел ли студент уже этот тест
     if TestResult.objects.filter(test=test, student=request.user).exists():
@@ -262,16 +271,17 @@ def start_test(request, test_id):
                 'id': q.id,
                 'text': q.text,
                 'image': q.image.url if q.image else None,
+                'question_type': q.question_type,  # ← ДОБАВЬТЕ ЭТУ СТРОКУ
                 'answers': [
                     {
                         'id': a.id,
                         'text': a.text
                     } for a in q.answers.all().order_by('order')
-                ]
+                ] if q.question_type == 'choice' else []  # ← И ДОБАВЬТЕ ПРОВЕРКУ ЗДЕСЬ
             } for q in questions
         ]
     }
-    
+        
     return JsonResponse(data)
 
 
@@ -310,22 +320,21 @@ def submit_test(request, test_id):
 
         # --- ОТКРЫТЫЕ ВОПРОСЫ ---
         if question.question_type == "open":
-
             UserAnswer.objects.create(
                 test_result=test_result,
                 question=question,
                 selected_answer=None,
                 text_answer=user_raw_answer or ""   # сохраняем текст
             )
-
+            
             # Для открытых вопросов балл = 0 (проверка вручную)
             details.append({
                 'question_text': question.text,
                 'user_answer': user_raw_answer or "Нет ответа",
-                'correct_answer': "",
-                'is_correct': False
+                'correct_answer': "Проверяется преподавателем",  # ← можно изменить текст
+                'is_correct': False  # ← всегда False для открытых
             })
-
+            
             continue  # переходим к следующему вопросу
 
         # --- ТЕСТОВЫЕ ВОПРОСЫ (CHOICE) ---
