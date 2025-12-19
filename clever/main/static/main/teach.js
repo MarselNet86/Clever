@@ -17,23 +17,26 @@ function activateTab(tabId) {
 
     // 2) подсвечиваем активную
     const activeBtn = document.getElementById(tabId);
+    if (!activeBtn) return; // защита на случай, если элемента нет
     activeBtn.classList.add('bg-brand-green', 'text-white');
     activeBtn.classList.remove('bg-gray-100', 'text-gray-600');
 
-    // 3) открываем соответствующий блок
-    document.getElementById('createTestContent').classList.add('hidden');
-    document.getElementById('createGroupContent').classList.add('hidden');
-    document.getElementById('myTestsContent').classList.add('hidden');
-    document.getElementById('testDetailContent').classList.add('hidden');
+    // 3) скрываем все блоки
+    document.getElementById('createTestContent')?.classList.add('hidden');
+    document.getElementById('createGroupContent')?.classList.add('hidden');
+    document.getElementById('myTestsContent')?.classList.add('hidden');
+    document.getElementById('testDetailContent')?.classList.add('hidden');
+    document.getElementById('testLevelsContent')?.classList.add('hidden');
 
+    // 4) показываем нужный
     if (tabId === 'createTestTab') {
-        document.getElementById('createTestContent').classList.remove('hidden');
-    }
-    if (tabId === 'createGroupTab') {
-        document.getElementById('createGroupContent').classList.remove('hidden');
-    }
-    if (tabId === 'myTestsTab') {
-        document.getElementById('myTestsContent').classList.remove('hidden');
+        document.getElementById('createTestContent')?.classList.remove('hidden');
+    } else if (tabId === 'createGroupTab') {
+        document.getElementById('createGroupContent')?.classList.remove('hidden');
+    } else if (tabId === 'myTestsTab') {
+        document.getElementById('myTestsContent')?.classList.remove('hidden');
+    } else if (tabId === 'testLevelsTab') {
+        document.getElementById('testLevelsContent')?.classList.remove('hidden');
     }
 }
 
@@ -41,7 +44,7 @@ function activateTab(tabId) {
 document.getElementById('createTestTab').onclick = () => activateTab('createTestTab');
 document.getElementById('createGroupTab').onclick = () => activateTab('createGroupTab');
 document.getElementById('myTestsTab').onclick = () => activateTab('myTestsTab');
-
+document.getElementById('testLevelsTab').onclick = () => activateTab('testLevelsTab');
 
 
 // Функция для пересчета номеров вопросов
@@ -118,14 +121,13 @@ document.getElementById('addQuestionBtn').addEventListener('click', function () 
                     </button>
                 </div>
 
-                <!-- Правильный ответ (только для тестовых вопросов) -->
-                <div class="correct-answer-container form-control">
+                <!-- Правильный ответ (СЕЛЕКТ - только для тестовых вопросов) -->
+                <div class="correct-answer-select-container form-control">
                     <label class="label">
                         <span class="label-text font-medium text-gray-700">Правильный ответ</span>
                     </label>
-                    <br>
                     <select name="question_${questionCounter}_correct" 
-                        class="select select-bordered h-[46px] rounded-xl px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition bg-white"
+                        class="select select-bordered h-[46px] rounded-xl px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition bg-white w-full"
                         required id="correctSelect_${questionCounter}">
                         <option value="">Выберите правильный ответ</option>
                         <option value="1">Вариант 1</option>
@@ -133,6 +135,18 @@ document.getElementById('addQuestionBtn').addEventListener('click', function () 
                         <option value="3">Вариант 3</option>
                         <option value="4">Вариант 4</option>
                     </select>
+                </div>
+
+                <!-- Правильный ответ (ТЕКСТ - только для открытых вопросов) -->
+                <div class="correct-answer-text-container form-control hidden">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700">Правильный ответ (текст)</span>
+                    </label>
+                    <input type="text" name="question_${questionCounter}_correct_text" 
+                        placeholder="Например: Синхрофазотрон"
+                        class="input input-bordered border border-gray-300 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
+                        id="correctText_${questionCounter}" />
+                    <p class="text-xs text-gray-500 mt-1">Ответ не чувствителен к регистру (ученик может писать как строчными, так и заглавными)</p>
                 </div>
 
                 <input type="hidden" name="question_${questionCounter}_answers_count" value="4" id="answersCount_${questionCounter}">
@@ -144,40 +158,72 @@ document.getElementById('addQuestionBtn').addEventListener('click', function () 
     const block = document.querySelector(`[data-question="${questionCounter}"]`);
     const typeSelect = block.querySelector(".question-type");
     const answersContainer = block.querySelector(".answers-container");
-    const correctAnswerContainer = block.querySelector(".correct-answer-container");
+
+    // Находим контейнеры для правильных ответов
+    const correctSelectContainer = block.querySelector(".correct-answer-select-container");
+    const correctTextContainer = block.querySelector(".correct-answer-text-container");
+
+    // Находим сами инпуты
+    const correctSelect = block.querySelector(`#correctSelect_${questionCounter}`);
+    const correctTextInput = block.querySelector(`#correctText_${questionCounter}`);
 
     // Обработчик переключения типа вопроса
     typeSelect.addEventListener("change", function () {
-        if (this.value === "open") {
-            // Скрываем варианты ответов и правильный ответ
-            answersContainer.classList.add("hidden");
-            correctAnswerContainer.classList.add("hidden");
+        const questionNum = parseInt(this.dataset.questionNum);
 
-            // Убираем required с select правильного ответа
-            const correctSelect = block.querySelector(`#correctSelect_${questionCounter}`);
+        if (this.value === "open") {
+            // -- РЕЖИМ ОТКРЫТОГО ВОПРОСА --
+
+            // Скрываем блоки
+            answersContainer.classList.add("hidden");
+            correctSelectContainer.classList.add("hidden");
+            correctTextContainer.classList.remove("hidden");
+
+            // Отключаем селект правильного ответа
+            correctSelect.disabled = true;
             correctSelect.removeAttribute('required');
 
-            // Убираем required со всех input вариантов ответов
-            const answerInputs = block.querySelectorAll('input[name^="question_"][name$="_answer_"]');
-            answerInputs.forEach(input => input.removeAttribute('required'));
-        } else {
-            // Показываем варианты ответов и правильный ответ
-            answersContainer.classList.remove("hidden");
-            correctAnswerContainer.classList.remove("hidden");
+            // Включаем текстовое поле
+            correctTextInput.disabled = false;
+            correctTextInput.setAttribute('required', 'required');
 
-            // Возвращаем required
-            const correctSelect = block.querySelector(`#correctSelect_${questionCounter}`);
+            // Отключаем ВСЕ поля вариантов ответов
+            const answerInputs = block.querySelectorAll(`input[name^="question_${questionNum}_answer_"]`);
+            answerInputs.forEach(input => {
+                input.disabled = true;
+                input.removeAttribute('required');
+            });
+
+        } else {
+            // -- РЕЖИМ ТЕСТОВОГО ВОПРОСА --
+
+            // Показываем блоки
+            answersContainer.classList.remove("hidden");
+            correctSelectContainer.classList.remove("hidden");
+            correctTextContainer.classList.add("hidden");
+
+            // Включаем селект правильного ответа
+            correctSelect.disabled = false;
             correctSelect.setAttribute('required', 'required');
 
-            // Возвращаем required для input вариантов ответов
-            const answerInputs = block.querySelectorAll('input[name^="question_"][name$="_answer_"]');
-            answerInputs.forEach(input => input.setAttribute('required', 'required'));
+            // Отключаем текстовое поле
+            correctTextInput.disabled = true;
+            correctTextInput.removeAttribute('required');
+
+            // Включаем поля вариантов ответов
+            const answerInputs = block.querySelectorAll(`input[name^="question_${questionNum}_answer_"]`);
+            answerInputs.forEach(input => {
+                input.disabled = false;
+                input.setAttribute('required', 'required');
+            });
         }
     });
 
+    typeSelect.dispatchEvent(new Event('change'));
     renumberQuestions();
     updateEmptyState();
 });
+
 
 // Генерация полей для вариантов ответов
 function generateAnswerInputs(questionNum, count) {
@@ -187,8 +233,7 @@ function generateAnswerInputs(questionNum, count) {
                 <div class="flex gap-2 items-center answer-row" data-answer="${i}">
                     <span class="text-gray-600 font-medium w-24">Вариант ${i}:</span>
                     <input type="text" name="question_${questionNum}_answer_${i}" placeholder="Введите вариант ответа"
-                        class="input input-bordered border border-gray-300 rounded-xl flex-1 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
-                        required />
+                        class="input input-bordered border border-gray-300 rounded-xl flex-1 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2" />
                     <button type="button" class="btn btn-circle btn-sm rounded-xl bg-red-500 hover:bg-red-600 text-white border-none"
                         onclick="removeAnswer(${questionNum}, ${i})">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -213,12 +258,17 @@ function addAnswer(questionNum) {
     }
 
     currentCount++;
+
+    // Проверяем текущий тип вопроса
+    const questionBlock = document.querySelector(`[data-question="${questionNum}"]`);
+    const isChoice = questionBlock.querySelector('.question-type').value === 'choice';
+
     const newAnswer = `
             <div class="flex gap-2 items-center answer-row" data-answer="${currentCount}">
                 <span class="text-gray-600 font-medium w-24">Вариант ${currentCount}:</span>
                 <input type="text" name="question_${questionNum}_answer_${currentCount}" placeholder="Введите вариант ответа"
                     class="input input-bordered border border-gray-300 rounded-xl flex-1 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
-                    required />
+                    ${isChoice ? 'required' : 'disabled'} />
                 <button type="button" class="btn btn-circle btn-sm rounded-xl bg-red-500 hover:bg-red-600 text-white border-none"
                     onclick="removeAnswer(${questionNum}, ${currentCount})">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

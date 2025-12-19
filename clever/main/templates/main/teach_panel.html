@@ -26,6 +26,12 @@
                     id="createGroupTab">
                     Создание группы
                 </button>
+                <button
+                    class="tab-button flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-200 bg-gray-100 text-gray-600"
+                    id="testLevelsTab">
+                    Уровни
+                </button>
+
             </div>
         </div>
 
@@ -41,6 +47,9 @@
 
         <!-- Контент: Результаты -->
         {% include 'main/partials/teach/test_detail.html' %}
+
+        <!-- Контент: test_levels -->
+        {% include 'main/partials/teach/test_levels.html' %}
     </div>
 </div>
 

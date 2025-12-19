@@ -1,15 +1,17 @@
+import re
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg, Count, Q, Prefetch
 import json
 
 from django.contrib.auth import get_user_model
 
 from .forms import RegisterForm, LoginForm
-from .models import UserProfile, Test, Question, AnswerOption, Group, TestResult, UserAnswer
+from .models import UserProfile, Test, Question, AnswerOption, Group, TestResult, UserAnswer, TestLevel
 
 
 User = get_user_model()
@@ -34,11 +36,15 @@ def teacher_home(request):
     
     # Получаем все тесты преподавателя с аннотациями
     my_tests = Test.objects.filter(created_by=request.user).prefetch_related(
-        'questions', 'results', 'groups'
+        'questions', 'results', 'groups', 'levels'
     ).annotate(
         results_count=Count('results'),
         avg_score=Avg('results__score')
     ).order_by('-created_at')
+
+    levels_map = {}
+    for t in my_tests:
+        levels_map[t.id] = {lvl.order: lvl for lvl in t.levels.all()}
     
     # Получаем все результаты студентов для всех тестов преподавателя
     all_results = TestResult.objects.filter(
@@ -75,7 +81,57 @@ def teacher_home(request):
         'groups': groups,
         'my_tests': my_tests,
         'results_data': results_data,
+        'levels_map': levels_map,
     })
+
+
+@login_required
+def test_levels(request, test_id):
+    if request.user.profile.role != 'teacher':
+        return redirect('main:home')
+
+    test = get_object_or_404(Test, id=test_id, created_by=request.user)
+
+    if request.method == 'POST':
+        TestLevel.objects.filter(test=test).delete()
+
+        try:
+            levels_count = int(request.POST.get('levels_count', 0))
+        except (TypeError, ValueError):
+            levels_count = 0
+
+        prev_max = -1  # чтобы первый min стал 0
+
+        for i in range(1, levels_count + 1):
+            # max берём из формы
+            raw_max = request.POST.get(f'level_{i}_max')
+
+            # для последнего уровня можно принудительно ставить 100
+            if i == levels_count:
+                max_percent = 100
+            else:
+                try:
+                    max_percent = int(raw_max)
+                except (TypeError, ValueError):
+                    max_percent = 0
+
+            # min вычисляем
+            min_percent = prev_max + 1
+            prev_max = max_percent
+
+            TestLevel.objects.create(
+                test=test,
+                title=(request.POST.get(f'level_{i}_title') or '').strip(),
+                min_percent=min_percent,
+                max_percent=max_percent,
+                description=(request.POST.get(f'level_{i}_description') or '').strip(),
+                recommendations=(request.POST.get(f'level_{i}_recommendations') or '').strip(),
+                order=i
+            )
+
+        return redirect('main:teacher_home')
+
+    return redirect('main:teacher_home')
 
 
 @login_required
@@ -110,32 +166,50 @@ def create_test(request):
             title=request.POST.get('test_title'),
             description=request.POST.get('test_description') or ''
         )
-
         test.groups.set(group_ids)
 
-        # — Вопросы сохраняются как раньше —
+        # Собираем только настоящие поля "текст вопроса": question_1_text, question_2_text ...
+        question_nums = []
         for key in request.POST.keys():
-            if key.startswith('question_') and key.endswith('_text'):
-                num = int(key.split('_')[1])
+            m = re.match(r'^question_(\d+)_text$', key)
+            if m:
+                question_nums.append(int(m.group(1)))
 
-                q = Question.objects.create(
-                    test=test,
-                    text=request.POST.get(f'question_{num}_text'),
-                    image=request.FILES.get(f'question_{num}_image'),
-                    order=num,
-                    question_type=request.POST.get(f'question_{num}_type')
-                )
-                
+        for num in sorted(set(question_nums)):
+            question_type = request.POST.get(f'question_{num}_type')
+
+            q = Question.objects.create(
+                test=test,
+                text=request.POST.get(f'question_{num}_text'),
+                image=request.FILES.get(f'question_{num}_image'),
+                order=num,
+                question_type=question_type
+            )
+
+            if question_type == 'open':
+                correct_text = request.POST.get(f'question_{num}_correct_text', '').strip()
+                q.correct_text_answer = correct_text
+                q.save()
+
+            elif question_type == 'choice':
                 correct = request.POST.get(f'question_{num}_correct')
-                cnt = int(request.POST.get(f'question_{num}_answers_count'))
 
-                for i in range(1, cnt+1):
-                    AnswerOption.objects.create(
-                        question=q,
-                        text=request.POST.get(f'question_{num}_answer_{i}'),
-                        order=i,
-                        is_correct=(str(i) == str(correct))
-                    )
+                try:
+                    cnt = int(request.POST.get(f'question_{num}_answers_count', 0))
+                except ValueError:
+                    cnt = 0
+
+                for i in range(1, cnt + 1):
+                    answer_text = request.POST.get(f'question_{num}_answer_{i}')
+                    if answer_text:
+                        AnswerOption.objects.create(
+                            question=q,
+                            text=answer_text,
+                            order=i,
+                            is_correct=(str(i) == str(correct))
+                        )
+
+        return redirect('main:teacher_home')
 
     return redirect('main:teacher_home')
 
@@ -202,8 +276,7 @@ def student_home(request):
         return redirect('main:home')
     
     student_group = request.user.profile.group
-    tests = Test.objects.filter(group=student_group).prefetch_related('questions').order_by('-created_at')
-    
+    tests = Test.objects.filter(groups=student_group).prefetch_related('questions').order_by('-created_at')    
     completed_tests = TestResult.objects.filter(student=request.user).values_list('test_id', flat=True)
     
     tests_data = []
@@ -239,15 +312,14 @@ def student_home(request):
 def start_test(request, test_id):
     if request.user.profile.role != 'student':
         return JsonResponse({'error': 'Access denied'}, status=403)
-    
-    test = get_object_or_404(Test, id=test_id, group=request.user.profile.group)
-    
-    # Проверяем, не прошел ли студент уже этот тест
+
+    test = get_object_or_404(Test, id=test_id, groups=request.user.profile.group)
+
     if TestResult.objects.filter(test=test, student=request.user).exists():
         return JsonResponse({'error': 'Тест уже пройден'}, status=400)
-    
+
     questions = test.questions.all().order_by('order')
-    
+
     data = {
         'id': test.id,
         'title': test.title,
@@ -257,17 +329,17 @@ def start_test(request, test_id):
                 'id': q.id,
                 'text': q.text,
                 'image': q.image.url if q.image else None,
+                'question_type': q.question_type,   # ✅ ВОТ ЭТО
                 'answers': [
-                    {
-                        'id': a.id,
-                        'text': a.text
-                    } for a in q.answers.all().order_by('order')
+                    {'id': a.id, 'text': a.text}
+                    for a in q.answers.all().order_by('order')
                 ]
             } for q in questions
         ]
     }
-    
     return JsonResponse(data)
+
+
 
 
 @login_required
@@ -276,7 +348,7 @@ def submit_test(request, test_id):
     if request.user.profile.role != 'student':
         return JsonResponse({'error': 'Access denied'}, status=403)
 
-    test = get_object_or_404(Test, id=test_id, group=request.user.profile.group)
+    test = get_object_or_404(Test, id=test_id, groups=request.user.profile.group)
 
     # Нельзя проходить один тест дважды
     if TestResult.objects.filter(test=test, student=request.user).exists():
@@ -305,23 +377,30 @@ def submit_test(request, test_id):
 
         # --- ОТКРЫТЫЕ ВОПРОСЫ ---
         if question.question_type == "open":
-
+            user_text_answer = (user_raw_answer or "").strip().lower()
+            correct_text = (question.correct_text_answer or "").strip().lower()
+            
+            # Проверяем совпадение (без учета регистра)
+            is_correct = user_text_answer == correct_text
+            
+            if is_correct:
+                correct_count += 1
+            
             UserAnswer.objects.create(
                 test_result=test_result,
                 question=question,
                 selected_answer=None,
-                text_answer=user_raw_answer or ""   # сохраняем текст
+                text_answer=user_raw_answer or ""
             )
-
-            # Для открытых вопросов балл = 0 (проверка вручную)
+            
             details.append({
                 'question_text': question.text,
                 'user_answer': user_raw_answer or "Нет ответа",
-                'correct_answer': "",
-                'is_correct': False
+                'correct_answer': question.correct_text_answer or "",
+                'is_correct': is_correct
             })
-
-            continue  # переходим к следующему вопросу
+            
+            continue
 
         # --- ТЕСТОВЫЕ ВОПРОСЫ (CHOICE) ---
         if question.question_type == "choice":

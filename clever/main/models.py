@@ -78,6 +78,29 @@ class Test(models.Model):
         return f"{self.title} ({self.group})"
 
 
+class TestLevel(models.Model):
+    test = models.ForeignKey(
+        Test,
+        on_delete=models.CASCADE,
+        related_name='levels'
+    )
+
+    title = models.CharField(max_length=100)  # Начальный / Продвинутый
+    min_percent = models.PositiveIntegerField()
+    max_percent = models.PositiveIntegerField()
+
+    description = models.TextField()
+    recommendations = models.TextField()
+
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.test.title}: {self.title}"
+
+
 class Question(models.Model):
 
     QUESTION_TYPES = (
@@ -97,6 +120,11 @@ class Question(models.Model):
     question_type = models.CharField(
         max_length=10, choices=QUESTION_TYPES, default='choice',
         verbose_name='Тип вопроса'
+    )
+
+    correct_text_answer = models.TextField(
+        blank=True, null=True,
+        verbose_name='Правильный текстовый ответ (для открытых вопросов)'
     )
 
     def __str__(self):
@@ -134,12 +162,14 @@ class TestResult(models.Model):
 
 class UserAnswer(models.Model):
     test_result = models.ForeignKey(TestResult, on_delete=models.CASCADE, related_name='answers')
-    text_answer = models.TextField(blank=True, null=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    selected_answer = models.ForeignKey(AnswerOption, on_delete=models.CASCADE)
-    
-    class Meta:
-        unique_together = ('test_result', 'question')
+    selected_answer = models.ForeignKey(
+        AnswerOption,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,          
+        related_name='user_answers'
+    )
+    text_answer = models.TextField(null=True, blank=True)
 
 
 class StudentTestAttempt(models.Model):

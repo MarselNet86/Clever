@@ -328,7 +328,11 @@ function renderQuestionNavigation() {
         button.className = 'w-10 h-10 rounded-xl font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-brand-green focus:ring-offset-2';
         button.textContent = index + 1;
 
-        const isAnswered = state.userAnswers[question.id] !== undefined;
+        const ans = state.userAnswers[question.id];
+        const isAnswered = (ans !== undefined) && (
+            typeof ans === 'number' || (typeof ans === 'string' && ans.trim().length > 0)
+        );
+
         const isCurrent = index === state.currentQuestionIndex;
 
         if (isCurrent) {
@@ -386,59 +390,102 @@ function showQuestion(index) {
     }
 
     // Варианты ответов
-    html += `
-            <fieldset class="space-y-3" role="radiogroup" aria-label="Варианты ответа">
-                <legend class="sr-only">Выберите один вариант ответа</legend>
-    `;
-
-    question.answers.forEach((answer, answerIndex) => {
-        const isSelected = state.userAnswers[question.id] === answer.id;
-        const inputId = `answer_${question.id}_${answer.id}`;
+    // --- ОТКРЫТЫЙ ВОПРОС ---
+    if (question.question_type === 'open') {
+        const saved = (state.userAnswers[question.id] ?? '');
 
         html += `
-            <label 
-                for="${inputId}"
-                class="flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-150 ${isSelected
-                ? 'border-brand-green bg-brand-green-container ring-2 ring-brand-green/20'
-                : 'border-gray-200 hover:border-brand-green/50 hover:bg-gray-50'
-            }"
-                role="radio"
-                aria-checked="${isSelected}"
-            >
-                <input 
-                    type="radio" 
-                    id="${inputId}"
-                    name="question_${question.id}" 
-                    value="${answer.id}"
-                    ${isSelected ? 'checked' : ''}
+            <div class="form-control mt-6">
+                <label class="label">
+                    <span class="label-text font-medium text-gray-700">Ваш ответ</span>
+                </label>
+                <textarea
+                    id="openAnswer_${question.id}"
                     data-question-id="${question.id}"
-                    data-answer-id="${answer.id}"
-                    class="radio radio-success border border-gray-300 flex-shrink-0 mt-0.5 focus:ring-2 focus:ring-brand-green focus:ring-offset-2"
-                />
-                <span class="flex-1 text-gray-800 select-none">
-                    <span class="font-medium text-gray-500 mr-2">${String.fromCharCode(65 + answerIndex)}.</span>
-                    ${escapeHtml(answer.text)}
-                </span>
-            </label>
+                    class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition resize-none"
+                    rows="4"
+                    placeholder="Введите ответ...">${escapeHtml(saved)}</textarea>
+                <p class="text-xs text-gray-500 mt-1">Регистр не важен</p>
+            </div>
         `;
-    });
+    } else {
+        // --- ТЕСТОВЫЙ ВОПРОС (CHOICE) ---
+        html += `
+            <fieldset class="space-y-3" role="radiogroup" aria-label="Варианты ответа">
+                <legend class="sr-only">Выберите один вариант ответа</legend>
+        `;
+
+        question.answers.forEach((answer, answerIndex) => {
+            const isSelected = state.userAnswers[question.id] === answer.id;
+            const inputId = `answer_${question.id}_${answer.id}`;
+
+            html += `
+                <label 
+                    for="${inputId}"
+                    class="flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-150 ${isSelected
+                    ? 'border-brand-green bg-brand-green-container ring-2 ring-brand-green/20'
+                    : 'border-gray-200 hover:border-brand-green/50 hover:bg-gray-50'
+                }"
+                    role="radio"
+                    aria-checked="${isSelected}"
+                >
+                    <input 
+                        type="radio" 
+                        id="${inputId}"
+                        name="question_${question.id}" 
+                        value="${answer.id}"
+                        ${isSelected ? 'checked' : ''}
+                        data-question-id="${question.id}"
+                        data-answer-id="${answer.id}"
+                        class="radio radio-success border border-gray-300 flex-shrink-0 mt-0.5 focus:ring-2 focus:ring-brand-green focus:ring-offset-2"
+                    />
+                    <span class="flex-1 text-gray-800 select-none">
+                        <span class="font-medium text-gray-500 mr-2">${String.fromCharCode(65 + answerIndex)}.</span>
+                        ${escapeHtml(answer.text)}
+                    </span>
+                </label>
+            `;
+        });
+
+        html += `
+            </fieldset>
+        `;
+    }
 
     html += `
-            </fieldset>
         </div>
     `;
+
 
     elements.currentQuestionContainer.innerHTML = html;
 
     // Добавление обработчиков для радио-кнопок
-    const radioInputs = elements.currentQuestionContainer.querySelectorAll('input[type="radio"]');
-    radioInputs.forEach(input => {
-        input.addEventListener('change', (e) => {
-            const questionId = parseInt(e.target.dataset.questionId);
-            const answerId = parseInt(e.target.dataset.answerId);
-            saveAnswer(questionId, answerId);
+    if (question.question_type === 'open') {
+        const textarea = elements.currentQuestionContainer.querySelector(
+            `#openAnswer_${question.id}`
+        );
+
+        if (textarea) {
+            textarea.addEventListener('input', (e) => {
+                const questionId = parseInt(e.target.dataset.questionId);
+                saveAnswer(questionId, e.target.value); // ⬅ сохраняем ТЕКСТ
+            });
+        }
+
+    } else {
+        const radioInputs = elements.currentQuestionContainer.querySelectorAll(
+            'input[type="radio"]'
+        );
+
+        radioInputs.forEach(input => {
+            input.addEventListener('change', (e) => {
+                const questionId = parseInt(e.target.dataset.questionId);
+                const answerId = parseInt(e.target.dataset.answerId);
+                saveAnswer(questionId, answerId); // ⬅ сохраняем ID варианта
+            });
         });
-    });
+    }
+
 
     // Обновление навигации
     updateNavigationButtons();

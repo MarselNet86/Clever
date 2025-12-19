@@ -1,0 +1,295 @@
+<div id="testLevelsContent" class="bg-white rounded-3xl shadow-xl p-4 md:p-8 hidden border border-gray-200">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
+        <div class="flex items-center gap-4">
+            <div class="p-3 bg-brand-green-container rounded-2xl border border-gray-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-brand-green" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5h6M9 9h6M9 13h6M9 17h6M5 5h.01M5 9h.01M5 13h.01M5 17h.01" />
+                </svg>
+            </div>
+            <div>
+                <h2 class="text-3xl font-black tracking-tight text-brand-green-dark">Уровни и рекомендации</h2>
+                <p class="text-sm text-gray-600">Настройка порогов прохождения для ваших тестов</p>
+            </div>
+        </div>
+    </div>
+
+    {% if my_tests %}
+    <div class="grid grid-cols-1 gap-8">
+        {% for t in my_tests %}
+        <div
+            class="bg-brand-green-container border border-gray-200 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-lg">
+            <div class="p-6">
+                <div class="flex flex-wrap justify-between items-center gap-4">
+                    <div class="flex-1 min-w-[200px]">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h3 class="text-xl font-bold text-gray-900">{{ t.title }}</h3>
+                            <div
+                                class="px-3 py-1 rounded-full text-xs font-semibold border border-brand-green/30 text-brand-green bg-white">
+                                {{ t.questions.count }} вопросов
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600">Настройте автоматические советы по результатам баллов</p>
+                    </div>
+
+                    <button type="button"
+                        class="px-6 py-3 bg-brand-green hover:bg-brand-green-hover text-white font-semibold rounded-xl transition shadow-sm hover:shadow-md flex items-center justify-center gap-2"
+                        onclick="toggleLevelsForm({{ t.id }})">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                        </svg>
+                        Настроить
+                    </button>
+                </div>
+
+                <!-- Accordion -->
+                <div id="levelsForm_{{ t.id }}" class="grid grid-rows-[0fr] transition-all duration-500 ease-in-out">
+                    <div class="overflow-hidden">
+                        <div class="my-6 h-px bg-gray-200"></div>
+
+                        <form method="post" action="{% url 'main:test_levels' t.id %}" class="space-y-8 pb-4">
+                            {% csrf_token %}
+                            <input type="hidden" name="levels_count" value="3" />
+
+                            <!-- Levels cards -->
+                            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+                                <!-- LEVEL 1 -->
+                                <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <span
+                                            class="px-3 py-1 rounded-full text-xs font-bold text-white bg-red-500">УРОВЕНЬ
+                                            1</span>
+
+                                        <div class="text-brand-green font-mono text-xs tracking-tight">
+                                            <span data-min-label="1">0</span>% — <span data-max-label="1">
+                                                {% for lvl in t.levels.all %}
+                                                {% if lvl.order == 1 %}{{ lvl.max_percent }}{% endif %}
+                                                {% empty %}49{% endfor %}
+                                                {% if not t.levels.all %}49{% endif %}
+                                            </span>%
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-4">
+                                        <div class="w-full">
+                                            <label class="block mb-2 text-sm font-bold text-gray-700">Заголовок</label>
+                                            <input name="level_1_title" required
+                                                value="{% for lvl in t.levels.all %}{% if lvl.order == 1 %}{{ lvl.title }}{% endif %}{% endfor %}{% if not t.levels.all %}Начальный{% endif %}"
+                                                class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition">
+                                        </div>
+
+                                        <div>
+                                            <div class="flex items-center justify-between mb-2">
+                                                <label class="text-sm font-bold text-gray-700">Максимальный %</label>
+                                                <span class="text-xs text-gray-600 font-mono">
+                                                    Сейчас: <span data-range-value="1">
+                                                        {% for lvl in t.levels.all %}{% if lvl.order == 1 %}{{
+                                                        lvl.max_percent }}{% endif %}{% endfor %}
+                                                        {% if not t.levels.all %}49{% endif %}
+                                                    </span>%
+                                                </span>
+                                            </div>
+
+                                            <input type="range" min="0" max="100" name="level_1_max"
+                                                class="range range-xs" data-range-level="1"
+                                                value="{% for lvl in t.levels.all %}{% if lvl.order == 1 %}{{ lvl.max_percent }}{% endif %}{% endfor %}{% if not t.levels.all %}49{% endif %}">
+                                        </div>
+
+                                        <div>
+                                            <label class="block mb-2 text-sm font-bold text-gray-700">Описание</label>
+                                            <textarea name="level_1_description" required
+                                                placeholder="Опишите результат..."
+                                                class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition resize-none text-sm h-24">{% for lvl in t.levels.all %}{% if lvl.order == 1 %}{{ lvl.description }}{% endif %}{% endfor %}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- LEVEL 2 -->
+                                <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <span
+                                            class="px-3 py-1 rounded-full text-xs font-bold text-white bg-yellow-500">УРОВЕНЬ
+                                            2</span>
+
+                                        <div class="text-brand-green font-mono text-xs tracking-tight">
+                                            <span data-min-label="2">50</span>% — <span data-max-label="2">
+                                                {% for lvl in t.levels.all %}
+                                                {% if lvl.order == 2 %}{{ lvl.max_percent }}{% endif %}
+                                                {% empty %}74{% endfor %}
+                                                {% if not t.levels.all %}74{% endif %}
+                                            </span>%
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-4">
+                                        <div class="w-full">
+                                            <label class="block mb-2 text-sm font-bold text-gray-700">Заголовок</label>
+                                            <input name="level_2_title" required
+                                                value="{% for lvl in t.levels.all %}{% if lvl.order == 2 %}{{ lvl.title }}{% endif %}{% endfor %}{% if not t.levels.all %}Допустимый{% endif %}"
+                                                class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition">
+                                        </div>
+
+                                        <div>
+                                            <div class="flex items-center justify-between mb-2">
+                                                <label class="text-sm font-bold text-gray-700">Максимальный %</label>
+                                                <span class="text-xs text-gray-600 font-mono">
+                                                    Сейчас: <span data-range-value="2">
+                                                        {% for lvl in t.levels.all %}{% if lvl.order == 2 %}{{
+                                                        lvl.max_percent }}{% endif %}{% endfor %}
+                                                        {% if not t.levels.all %}74{% endif %}
+                                                    </span>%
+                                                </span>
+                                            </div>
+
+                                            <input type="range" min="0" max="100" name="level_2_max"
+                                                class="range range-xs" data-range-level="2"
+                                                value="{% for lvl in t.levels.all %}{% if lvl.order == 2 %}{{ lvl.max_percent }}{% endif %}{% endfor %}{% if not t.levels.all %}74{% endif %}">
+                                        </div>
+
+                                        <div>
+                                            <label class="block mb-2 text-sm font-bold text-gray-700">Описание</label>
+                                            <textarea name="level_2_description" required
+                                                placeholder="Опишите результат..."
+                                                class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition resize-none text-sm h-24">{% for lvl in t.levels.all %}{% if lvl.order == 2 %}{{ lvl.description }}{% endif %}{% endfor %}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- LEVEL 3 -->
+                                <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <span
+                                            class="px-3 py-1 rounded-full text-xs font-bold text-white bg-green-600">УРОВЕНЬ
+                                            3</span>
+
+                                        <div class="text-brand-green font-mono text-xs tracking-tight">
+                                            <span data-min-label="3">75</span>% — <span data-max-label="3">100</span>%
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-4">
+                                        <div class="w-full">
+                                            <label class="block mb-2 text-sm font-bold text-gray-700">Заголовок</label>
+                                            <input name="level_3_title" required
+                                                value="{% for lvl in t.levels.all %}{% if lvl.order == 3 %}{{ lvl.title }}{% endif %}{% endfor %}{% if not t.levels.all %}Продвинутый{% endif %}"
+                                                class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition">
+                                        </div>
+
+                                        <div>
+                                            <div class="flex items-center justify-between mb-2">
+                                                <label class="text-sm font-bold text-gray-700">Максимальный %</label>
+                                                <span class="text-xs text-gray-600 font-mono">
+                                                    Сейчас: <span data-range-value="3">100</span>%
+                                                </span>
+                                            </div>
+
+                                            <input type="range" min="0" max="100" value="100" name="level_3_max"
+                                                class="range range-xs opacity-60 cursor-not-allowed"
+                                                data-range-level="3" disabled>
+                                        </div>
+
+                                        <div>
+                                            <label class="block mb-2 text-sm font-bold text-gray-700">Описание</label>
+                                            <textarea name="level_3_description" required
+                                                placeholder="Опишите результат..."
+                                                class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition resize-none text-sm h-24">{% for lvl in t.levels.all %}{% if lvl.order == 3 %}{{ lvl.description }}{% endif %}{% endfor %}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- Recommendations -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <textarea name="level_1_recommendations"
+                                    class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition resize-none text-sm h-20 bg-white"
+                                    placeholder="Рекомендации для Уровня 1">{% for lvl in t.levels.all %}{% if lvl.order == 1 %}{{ lvl.recommendations }}{% endif %}{% endfor %}</textarea>
+
+                                <textarea name="level_2_recommendations"
+                                    class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition resize-none text-sm h-20 bg-white"
+                                    placeholder="Рекомендации для Уровня 2">{% for lvl in t.levels.all %}{% if lvl.order == 2 %}{{ lvl.recommendations }}{% endif %}{% endfor %}</textarea>
+
+                                <textarea name="level_3_recommendations"
+                                    class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition resize-none text-sm h-20 bg-white"
+                                    placeholder="Рекомендации для Уровня 3">{% for lvl in t.levels.all %}{% if lvl.order == 3 %}{{ lvl.recommendations }}{% endif %}{% endfor %}</textarea>
+                            </div>
+
+                            <!-- Actions -->
+                            <div
+                                class="flex flex-col sm:flex-row gap-3 justify-end items-center border-t border-gray-200 pt-6">
+                                <button type="button"
+                                    class="w-full sm:w-auto px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition"
+                                    onclick="toggleLevelsForm({{ t.id }})">
+                                    Отмена
+                                </button>
+
+                                <button type="submit"
+                                    class="w-full bg-brand-green hover:bg-brand-green-hover text-white font-semibold py-3 px-4 rounded-xl transition shadow-sm hover:shadow-md flex items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Сохранить настройки
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-brand-green-container rounded-3xl py-20 border-2 border-dashed border-gray-300 text-center">
+        <div class="max-w-md mx-auto">
+            <div class="text-5xl mb-4">📝</div>
+            <h3 class="text-2xl font-bold text-gray-700">Тестов пока нет</h3>
+            <p class="py-4 text-gray-500">Создайте свой первый тест, чтобы настроить для него уровни оценки.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function toggleLevelsForm(testId) {
+        const wrapper = document.getElementById(`levelsForm_${testId}`);
+        if (!wrapper) return;
+
+        if (wrapper.style.gridTemplateRows === "1fr") {
+            wrapper.style.gridTemplateRows = "0fr";
+        } else {
+            wrapper.style.gridTemplateRows = "1fr";
+            bindLevelRanges(wrapper);
+        }
+    }
+
+    function bindLevelRanges(root = document) {
+        const ranges = root.querySelectorAll('input[type="range"][data-range-level]');
+        ranges.forEach(range => {
+            const level = range.dataset.rangeLevel;
+
+            const maxLabel = root.querySelector(`[data-max-label="${level}"]`);
+            const valueLabel = root.querySelector(`[data-range-value="${level}"]`);
+
+            const sync = () => {
+                const v = range.value;
+                if (maxLabel) maxLabel.textContent = v;
+                if (valueLabel) valueLabel.textContent = v;
+            };
+
+            range.addEventListener('input', sync);
+            sync();
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => bindLevelRanges());
+</script>
