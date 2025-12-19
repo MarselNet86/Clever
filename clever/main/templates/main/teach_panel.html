@@ -3,55 +3,97 @@
 {% block title %}Панель преподавателя{% endblock %}
 
 {% block content %}
+<!-- Основной фон: очень мягкий оттенок серо-зеленого -->
+<div class="min-h-screen bg-[#f8faf9] pb-20">
 
-<div class="min-h-screen bg-brand-green-container">
-    <!-- Основной контент -->
-    <div class="container mx-auto px-4 py-8">
-        <!-- Табы -->
-        <div class="bg-white rounded-2xl shadow-xl mb-6 p-2">
-            <div class="flex gap-2">
-                <button
-                    class="tab-button flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-200 bg-brand-green text-white"
-                    id="createTestTab">
-                    Создание работы
-                </button>
-                <button
-                    class="tab-button flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-200 bg-gray-100 text-gray-600"
-                    id="myTestsTab">
-                    Мои тесты
-                </button>
+    <div class="max-w-[1600px] mx-auto px-4 md:px-10 py-10 relative z-10">
 
-                <button
-                    class="tab-button flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-200 bg-gray-100 text-gray-600"
-                    id="createGroupTab">
-                    Создание группы
-                </button>
-                <button
-                    class="tab-button flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-200 bg-gray-100 text-gray-600"
-                    id="testLevelsTab">
-                    Уровни
+        <!-- Секция Табов: Современный сегментированный контроллер -->
+        <div class="mb-10 flex justify-center">
+            <nav
+                class="bg-white/80 backdrop-blur-md p-2 rounded-[2rem] border border-white shadow-2xl shadow-gray-200/50 inline-flex flex-wrap md:flex-nowrap gap-3">
+
+                <!-- Таб: Создание -->
+                <button id="createTestTab"
+                    class="tab-button group flex items-center gap-3 px-8 py-4 rounded-[1.5rem] transition-all duration-300 active:scale-95 bg-brand-green text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span class="text-[11px] font-black uppercase tracking-[0.2em]">Создание работы</span>
                 </button>
 
-            </div>
+                <!-- Таб: Мои тесты -->
+                <button id="myTestsTab"
+                    class="tab-button group flex items-center gap-3 px-8 py-4 rounded-[1.5rem] transition-all duration-300 active:scale-95 text-gray-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span class="text-[11px] font-black uppercase tracking-[0.2em]">Моя библиотека</span>
+                </button>
+
+                <!-- Таб: Группы -->
+                <button id="createGroupTab"
+                    class="tab-button group flex items-center gap-3 px-8 py-4 rounded-[1.5rem] transition-all duration-300 active:scale-95 text-gray-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span class="text-[11px] font-black uppercase tracking-[0.2em]">Аудитории</span>
+                </button>
+
+                <!-- Таб: Уровни -->
+                <button id="testLevelsTab"
+                    class="tab-button group flex items-center gap-3 px-8 py-4 rounded-[1.5rem] transition-all duration-300 active:scale-95 text-gray-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    <span class="text-[11px] font-black uppercase tracking-[0.2em]">Пороги оценок</span>
+                </button>
+
+            </nav>
         </div>
 
+        <!-- Контейнер для динамического контента -->
+        <main class="animate-in fade-in slide-in-from-bottom-6 duration-700">
+            <!-- Контент: Мои тесты -->
+            {% include 'main/partials/teach/my_tests.html' %}
 
-        <!-- Контент: Мои тесты -->
-        {% include 'main/partials/teach/my_tests.html' %}
+            <!-- Контент: Создание теста -->
+            {% include 'main/partials/teach/create_test.html' %}
 
-        <!-- Контент: Создание теста -->
-        {% include 'main/partials/teach/create_test.html' %}
+            <!-- Контент: Создание группы -->
+            {% include 'main/partials/teach/create_group.html' %}
 
-        <!-- Контент: Создание группы -->
-        {% include 'main/partials/teach/create_group.html' %}
+            <!-- Контент: Результаты -->
+            {% include 'main/partials/teach/test_detail.html' %}
 
-        <!-- Контент: Результаты -->
-        {% include 'main/partials/teach/test_detail.html' %}
-
-        <!-- Контент: test_levels -->
-        {% include 'main/partials/teach/test_levels.html' %}
+            <!-- Контент: test_levels -->
+            {% include 'main/partials/teach/test_levels.html' %}
+        </main>
     </div>
 </div>
+
+<!-- Оптимизация для мобильной навигации (скролл табов) -->
+<style>
+    @media (max-width: 768px) {
+        nav {
+            overflow-x: auto;
+            max-width: 100%;
+            justify-content: flex-start;
+            scrollbar-width: none;
+        }
+
+        nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-button {
+            white-space: nowrap;
+        }
+    }
+</style>
 
 <!-- Import teach JS -->
 <script src="{% static 'main/teach.js' %}"></script>

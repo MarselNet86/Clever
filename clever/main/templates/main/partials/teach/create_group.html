@@ -1,56 +1,111 @@
-<div id="createGroupContent" class="hidden">
-    <div class="mx-auto">
-        <div class="bg-white rounded-2xl shadow-xl p-8">
-            <div class="flex items-center gap-3 mb-6">
-                <div class="w-12 h-12 bg-brand-green-container rounded-xl flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-green" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                </div>
-                <h2 class="text-2xl font-bold text-brand-green-dark">Создание группы</h2>
+<div id="createGroupContent" class="hidden w-full max-w-[1600px] mx-auto pb-20 px-4">
+    <!-- Единый массивный контейнер-карточка -->
+    <div class="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100 p-8 md:p-12">
+
+        <!-- Общий заголовок секции -->
+        <div class="flex items-center gap-4 mb-12">
+            <div class="w-14 h-14 bg-brand-green/10 rounded-[1.5rem] flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-brand-green" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
             </div>
+            <div>
+                <h2 class="text-3xl font-black text-brand-green-dark tracking-tight">Управление аудиториями</h2>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Создание новых и контроль
+                    существующих групп</p>
+            </div>
+        </div>
 
-            <form method="post" action="{% url 'main:create_group' %}">
-                {% csrf_token %}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
 
-                <div class="form-control mb-6">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700 text-lg">Название группы</span>
-                    </label>
-                    <input type="text" name="group_name" placeholder="Например: ИС-301, БИ-202"
-                        class="input input-bordered w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition bg-white"
-                        required>
-                    <label class="label">
-                        <span class="label-text-alt text-gray-500">Введите уникальное название для группы</span>
-                    </label>
+            <!-- ЛЕВАЯ КОЛОНКА: Создание группы -->
+            <div class="space-y-8 lg:border-r lg:border-gray-100 lg:pr-12">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-2 h-8 bg-brand-green rounded-full"></div>
+                    <h3 class="text-xl font-black text-gray-800 uppercase tracking-tight">Новая группа</h3>
                 </div>
 
-                <div class="bg-brand-green-container rounded-xl p-4 mb-6">
-                    <div class="flex items-start gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-green flex-shrink-0 mt-0.5"
-                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <p class="text-sm text-gray-700">
-                            После создания группы вы сможете назначать студентов и создавать для них тесты.
+                <form method="post" action="{% url 'main:create_group' %}" class="space-y-6">
+                    {% csrf_token %}
+                    <div class="form-control">
+                        <label
+                            class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Название
+                            / Код группы</label>
+                        <input type="text" name="group_name" placeholder="Напр: ИС-301 или Дизайнеры (вечер)"
+                            class="w-full px-6 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:bg-white transition-all font-bold text-gray-800 placeholder:text-gray-300 shadow-sm"
+                            required>
+                    </div>
+
+                    <div class="bg-brand-green/5 border border-brand-green/10 rounded-2xl p-6">
+                        <p class="text-xs text-brand-green-dark font-bold leading-relaxed flex gap-3">
+                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Название группы увидят студенты при регистрации. Убедитесь, что оно понятно и уникально.
                         </p>
                     </div>
+
+                    <button type="submit"
+                        class="w-full bg-brand-green hover:bg-brand-green-hover text-white font-black py-5 px-8 rounded-2xl transition-all shadow-xl shadow-brand-green/20 active:scale-95 flex items-center justify-center gap-3 text-xs tracking-[0.2em] uppercase">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+                        </svg>
+                        ЗАРЕГИСТРИРОВАТЬ
+                    </button>
+                </form>
+            </div>
+
+            <!-- ПРАВАЯ КОЛОНКА: Список и Удаление -->
+            <div class="space-y-8">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-8 bg-gray-200 rounded-full"></div>
+                        <h3 class="text-xl font-black text-gray-800 uppercase tracking-tight">Ваши группы</h3>
+                    </div>
+                    <span
+                        class="text-[10px] font-black text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">ВСЕГО:
+                        {{ groups|length }}</span>
                 </div>
 
-                <div class="flex gap-3">
-                    <button type="submit"
-                        class="btn bg-brand-green rounded-xl hover:bg-brand-green-hover text-white border-none flex-1 text-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Создать группу
-                    </button>
+                <div class="grid gap-3 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
+                    {% for g in groups %}
+                    <div
+                        class="group/item flex items-center justify-between p-5 bg-gray-50 border border-gray-100 rounded-2xl transition-all hover:bg-white hover:shadow-lg hover:shadow-gray-200/50">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm font-black text-brand-green border border-gray-100">
+                                {{ forloop.counter }}
+                            </div>
+                            <div>
+                                <p class="font-black text-gray-800 tracking-tight">{{ g.name }}</p>
+                                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">{{ g.students.count|default:"0" }} Студентов в базе</p>
+                            </div>
+                        </div>
+
+                        <!-- Кнопка удаления (Мягко-красная) -->
+                        <form method="post" action="{% url 'main:delete_group' g.id %}"
+                            onsubmit="return confirm('Удалить группу «{{ g.name }}»?\nВнимание: Студенты этой группы потеряют доступ к тестам.');">
+                            {% csrf_token %}
+                            <button type="submit"
+                                class="w-10 h-10 bg-red-50 hover:bg-red-600 text-red-400 hover:text-white rounded-xl flex items-center justify-center transition-all active:scale-90 border border-red-100 shadow-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-10 opacity-40">
+                        <p class="text-sm font-bold uppercase tracking-widest text-gray-400">Список групп пуст</p>
+                    </div>
+                    {% endfor %}
                 </div>
-            </form>
+            </div>
+
         </div>
     </div>
 </div>

@@ -30,9 +30,16 @@ class CustomUser(AbstractUser):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
     
-    def __str__(self):
-        return f"{self.username or self.email}"
+    def get_full_name(self):
+            """Возвращает ФИО из поля username"""
+            return self.username
 
+    def get_short_name(self):
+        """Возвращает ФИО (короткое имя)"""
+        return self.username
+
+    def __str__(self):
+        return self.username or self.email
 
 class Group(models.Model):
     """Учебная группа"""

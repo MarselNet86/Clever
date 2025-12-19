@@ -1,96 +1,105 @@
 {% extends 'main/base.html' %}
+{% load static %}
 
-{% block title %}Вход{% endblock %}
+{% block title %}Вход | Clever{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-green-dark to-brand-green p-4">
-    <div class="w-full max-w-md">
+<div class="min-h-screen flex items-center justify-center bg-[#f8faf9] p-6 relative overflow-hidden">
+
+    <!-- Декоративные размытые фоны для глубины -->
+    <div class="absolute -top-24 -left-24 w-96 h-96 bg-brand-green/5 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-brand-green/10 rounded-full blur-3xl"></div>
+
+    <div class="w-full max-w-[480px] relative z-10">
+        <!-- Логотип сверху -->
+        <div class="flex flex-col items-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div
+                class="w-20 h-20 bg-white rounded-[1.5rem] shadow-xl border border-gray-100 flex items-center justify-center mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-brand-green" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+            </div>
+            <h1 class="text-4xl font-black text-brand-green-dark tracking-tighter uppercase">Clever</h1>
+            <p class="text-gray-400 font-bold text-[10px] uppercase tracking-[0.3em] mt-2">Образовательная платформа</p>
+        </div>
+
         <!-- Карточка формы -->
-        <div class="bg-white rounded-2xl shadow-2xl p-8">
-            <!-- Заголовок -->
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-brand-green-dark mb-2">Clever</h2>
-                <p class="text-gray-600">Войдите в свой аккаунт</p>
+        <div
+            class="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/60 border border-gray-100 p-10 md:p-12 animate-in fade-in zoom-in-95 duration-500">
+            <div class="mb-10">
+                <h2 class="text-2xl font-black text-gray-800 tracking-tight">Авторизация</h2>
+                <p class="text-sm font-medium text-gray-400 mt-1">Войдите, чтобы продолжить обучение</p>
             </div>
 
+            <!-- Ошибки (если есть) -->
+            {% if error or form.non_field_errors %}
+            <div
+                class="mb-8 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 animate-in shake duration-500">
+                <div
+                    class="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-red-500 shadow-sm shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <span class="text-xs font-bold text-red-800 uppercase tracking-tight">
+                    {% if error %}
+                    {{ error }}
+                    {% else %}
+                    {% for err in form.non_field_errors %}
+                    {{ err }}
+                    {% endfor %}
+                    {% endif %}
+                </span>
+            </div>
+            {% endif %}
+
             <!-- Форма -->
-            <form method="post" class="space-y-5">
+            <form method="post" class="space-y-6">
                 {% csrf_token %}
 
                 <!-- Email -->
                 <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Email</span>
-                    </label>
-                    <input type="email" name="email" placeholder="example@email.com"
-                        class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition"
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Email
+                        адрес</label>
+                    <input type="email" name="email" placeholder="example@mail.com"
+                        class="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:bg-white transition-all font-bold text-gray-800 placeholder:text-gray-300 shadow-sm"
                         required />
-                    {% if form.email.errors %}
-                    <label class="label">
-                        <span class="label-text-alt text-error">{{ form.email.errors.0 }}</span>
-                    </label>
-                    {% endif %}
                 </div>
 
                 <!-- Пароль -->
                 <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Пароль</span>
-                    </label>
-                    <input type="password" name="password" placeholder="Введите пароль"
-                        class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition"
+                    <label
+                        class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Пароль</label>
+                    <input type="password" name="password" placeholder="••••••••"
+                        class="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:bg-white transition-all font-bold text-gray-800 placeholder:text-gray-300 shadow-sm"
                         required />
-                    {% if form.password.errors %}
-                    <label class="label">
-                        <span class="label-text-alt text-error">{{ form.password.errors.0 }}</span>
-                    </label>
-                    {% endif %}
                 </div>
 
-                <!-- Ошибка входа -->
-                {% if error %}
-                <div class="alert alert-error shadow-lg">
-                    <div>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>{{ error }}</span>
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Общие ошибки формы -->
-                {% if form.non_field_errors %}
-                <div class="alert alert-error shadow-lg">
-                    <div>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>{{ form.non_field_errors.0 }}</span>
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Кнопка отправки -->
-                <div class="form-control mt-6">
+                <!-- Кнопка входа -->
+                <div class="pt-4">
                     <button type="submit"
-                        class="w-full bg-brand-green hover:bg-brand-green-hover text-white font-semibold py-3 px-4 rounded-xl transition shadow-sm hover:shadow-md flex items-center justify-center gap-2"
-                        style="background-color: #1B7D4A;">
-                        Войти
+                        class="w-full bg-brand-green hover:bg-brand-green-hover text-white font-black py-5 px-8 rounded-2xl transition-all shadow-xl shadow-brand-green/20 active:scale-95 flex items-center justify-center gap-3 text-xs tracking-[0.2em] uppercase">
+                        <span>ВОЙТИ В АККАУНТ</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
                     </button>
                 </div>
             </form>
 
             <!-- Ссылка на регистрацию -->
-            <div class="text-center mt-6">
-                <p class="text-gray-600">
-                    Нет аккаунта?
-                    <a href="{% url 'main:register' %}" class="font-medium hover:underline" style="color: #1B7D4A;">
-                        Зарегистрироваться
+            <div class="text-center mt-10">
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                    Впервые у нас?
+                    <a href="{% url 'main:register' %}"
+                        class="text-brand-green hover:text-brand-green-dark transition-colors ml-1">
+                        Создать аккаунт
                     </a>
                 </p>
             </div>

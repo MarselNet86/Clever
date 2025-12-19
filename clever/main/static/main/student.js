@@ -606,75 +606,83 @@ async function submitTest() {
 // ОТОБРАЖЕНИЕ РЕЗУЛЬТАТОВ
 // ============================================================================
 function showResults(result) {
-    // Переключение секций
+    elements.testsListContent.classList.add('hidden');
     elements.testTakingContent.classList.add('hidden');
     elements.testResultContent.classList.remove('hidden');
 
-    // Процент и основная статистика
     const percentage = Math.round((result.correct / result.total) * 100);
-    const passThreshold = result.pass_threshold || 60;
-    const passed = percentage >= passThreshold;
+    const passed = percentage >= (result.pass_threshold || 60);
 
+    // Цвет текста результата: темно-зеленый (не неоновый)
     elements.resultScore.textContent = `${percentage}%`;
-    elements.resultScore.style.color = passed ? '#059669' : '#DC2626';
-    elements.resultText.textContent = `Правильных ответов: ${result.correct} из ${result.total}`;
+    elements.resultScore.style.color = passed ? '#064e3b' : '#991b1b';
+    elements.resultText.textContent = `${result.correct} из ${result.total} правильных`;
 
     if (result.time_spent !== undefined) {
-        elements.resultTime.textContent = `Затраченное время: ${formatTime(result.time_spent)}`;
+        elements.resultTime.innerHTML = `
+            <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2.5"/></svg>
+            <span class="opacity-70 font-bold">Время прохождения: ${formatTime(result.time_spent)}</span>
+        `;
     }
 
-    // Детализация по вопросам
-    let detailsHtml = '';
+    document.getElementById('resLevelTitle').textContent = result.level_title || "Завершено";
+    document.getElementById('resLevelDesc').textContent = result.level_description || "";
+    const recsBlock = document.getElementById('resLevelRecsBlock');
+    const recsText = document.getElementById('resLevelRecs');
 
+    if (result.level_recommendations && result.level_recommendations.trim()) {
+        recsText.textContent = result.level_recommendations;
+        recsBlock.classList.remove('hidden');
+    } else {
+        recsBlock.classList.add('hidden');
+    }
+
+    let detailsHtml = '';
     result.details.forEach((detail, index) => {
         const isCorrect = detail.is_correct;
-        const borderColor = isCorrect ? 'border-green-200' : 'border-red-200';
-        const bgColor = isCorrect ? 'bg-green-50' : 'bg-red-50';
-        const dividerColor = isCorrect ? 'border-green-200' : 'border-red-200';
+        // Используем очень бледные фоны (opacity 5-10%)
+        const bgColor = isCorrect ? 'bg-brand-green/5' : 'bg-red-50/80';
+        const borderColor = isCorrect ? 'border-brand-green/10' : 'border-red-100';
 
+        // Внутри цикла result.details.forEach в student.js
         detailsHtml += `
-            <details class="group ${bgColor} border-2 ${borderColor} rounded-xl overflow-hidden">
-                <summary class="flex items-center gap-3 p-4 cursor-pointer list-none hover:bg-black/5 transition-colors">
-                    <span class="text-2xl flex-shrink-0">${isCorrect ? '✅' : '❌'}</span>
-                    <div class="flex-1 min-w-0">
-                        <h3 class="font-semibold text-gray-900 mb-1">Вопрос ${index + 1}</h3>
-                        <p class="text-sm text-gray-600 line-clamp-1">${escapeHtml(detail.question_text)}</p>
+            <div class="${bgColor} border ${borderColor} rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-8 transition-all">
+                <div class="flex flex-col md:flex-row gap-5 md:gap-8">
+                    <!-- Индикатор: меньше на мобилках -->
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0 font-black text-xs md:text-sm text-gray-400 border border-gray-50">
+                        ${index + 1}
                     </div>
-                    <svg class="w-5 h-5 text-gray-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                    </svg>
-                </summary>
-                
-                <div class="px-4 pb-4 pt-0 border-t ${dividerColor}">
-                    <div class="pt-4 space-y-3">
-                        <p class="text-gray-800 font-medium">${escapeHtml(detail.question_text)}</p>
+                    
+                    <div class="flex-1">
+                        <h3 class="font-bold text-gray-800 mb-4 md:mb-6 text-sm md:text-base leading-relaxed">${escapeHtml(detail.question_text)}</h3>
                         
-                        <div class="space-y-2 text-sm bg-white rounded-lg p-3 border border-gray-200">
-                            <div class="flex gap-2">
-                                <span class="text-gray-600 font-medium min-w-[120px]">Ваш ответ:</span>
-                                <span class="font-semibold ${isCorrect ? 'text-green-700' : 'text-red-700'}">
-                                    ${escapeHtml(detail.user_answer || 'Не отвечено')}
-                                </span>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                            <div class="bg-white/70 rounded-xl md:rounded-2xl p-3 md:p-4 border border-white/50 shadow-sm">
+                                <span class="text-[8px] md:text-[9px] font-black text-gray-400 uppercase block mb-1 tracking-widest">Ваш ответ</span>
+                                <p class="text-xs md:text-sm font-bold ${isCorrect ? 'text-brand-green-dark' : 'text-red-700'}">
+                                    ${escapeHtml(detail.user_answer || 'Пропущено')}
+                                </p>
                             </div>
                             
                             ${!isCorrect ? `
-                                <div class="flex gap-2 pt-2 border-t border-gray-200">
-                                    <span class="text-gray-600 font-medium min-w-[120px]">Правильный ответ:</span>
-                                    <span class="font-semibold text-green-700">
-                                        ${escapeHtml(detail.correct_answer)}
-                                    </span>
-                                </div>
+                            <div class="bg-brand-green-container/30 rounded-xl md:rounded-2xl p-3 md:p-4 border border-brand-green/5">
+                                <span class="text-[8px] md:text-[9px] font-black text-brand-green-dark/50 uppercase block mb-1 tracking-widest">Верный ответ</span>
+                                <p class="text-xs md:text-sm font-bold text-brand-green-dark">${escapeHtml(detail.correct_answer)}</p>
+                            </div>
                             ` : ''}
                         </div>
                     </div>
+                    
+                    <!-- Иконка в углу на мобильных или сбоку на ПК -->
+                    <div class="absolute md:relative top-4 right-4 md:top-0 md:right-0 text-xl md:text-3xl">
+                        ${isCorrect ? '✨' : '🩹'}
+                    </div>
                 </div>
-            </details>
+            </div>
         `;
     });
 
     elements.detailedResults.innerHTML = detailsHtml;
-
-    // Скролл наверх
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 

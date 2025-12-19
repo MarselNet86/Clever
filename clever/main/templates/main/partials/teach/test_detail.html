@@ -1,80 +1,128 @@
 <!-- Детальные результаты по тесту -->
-<div id="testDetailContent" class="hidden">
-    <div class="bg-white rounded-2xl shadow-xl p-8">
-        <!-- Заголовок с кнопкой "Назад" -->
-        <div class="flex items-center gap-4 mb-8">
-            <button onclick="activateTab('myTestsTab')"
-                class="btn btn-circle bg-brand-green-container hover:bg-brand-green-light border-none">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-green-dark" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
-            </button>
-            <div class="flex-1">
-                <h2 id="testDetailTitle" class="text-2xl font-bold text-brand-green-dark mb-1">Название теста</h2>
-                <div class="flex items-center gap-4 text-sm text-gray-600">
-                    <span id="testDetailGroup">Группа</span>
-                    <span>•</span>
-                    <span id="testDetailQuestions">0 вопросов</span>
-                    <span>•</span>
-                    <span id="testDetailCreated">Создан 00.00.0000</span>
+<div id="testDetailContent" class="hidden w-full max-w-[1600px] mx-auto pb-20 px-4">
+    <!-- Главная карточка-отчет -->
+    <div
+        class="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100 p-8 md:p-12 animate-in fade-in zoom-in-95 duration-500">
+
+        <!-- Верхняя панель: Навигация и Сводка -->
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-12">
+            <div class="flex items-center gap-6">
+                <!-- Кнопка назад в едином стиле -->
+                <button onclick="activateTab('myTestsTab')"
+                    class="group w-14 h-14 bg-gray-50 hover:bg-brand-green text-gray-400 hover:text-white rounded-[1.5rem] flex items-center justify-center transition-all active:scale-90 border border-gray-100 shrink-0 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="h-6 w-6 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+
+                <div>
+                    <h2 id="testDetailTitle"
+                        class="text-3xl font-black text-brand-green-dark tracking-tight leading-tight uppercase mb-2">
+                        Название теста</h2>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <span id="testDetailGroup"
+                            class="px-3 py-1 bg-brand-green/10 text-brand-green text-[10px] font-black rounded-lg uppercase tracking-tighter">Группа</span>
+                        <div class="w-1 h-1 rounded-full bg-gray-300"></div>
+                        <span id="testDetailQuestions" class="text-[11px] font-bold text-gray-400 uppercase">0
+                            вопросов</span>
+                        <div class="w-1 h-1 rounded-full bg-gray-300"></div>
+                        <span id="testDetailCreated" class="text-[11px] font-bold text-gray-400 uppercase">Создан
+                            00.00.0000</span>
+                    </div>
                 </div>
             </div>
-            <div class="text-right">
-                <div class="text-sm text-gray-500">Всего прохождений</div>
-                <div id="testDetailTotal" class="text-2xl font-bold text-brand-green">0</div>
+
+            <!-- Карточка "Всего прохождений" -->
+            <div
+                class="bg-brand-green/5 border border-brand-green/10 rounded-[1.5rem] px-8 py-4 flex flex-col items-center lg:items-end shrink-0">
+                <span class="text-[10px] font-black text-brand-green uppercase tracking-[0.2em] mb-1">Всего
+                    ответов</span>
+                <div id="testDetailTotal"
+                    class="text-4xl font-black text-brand-green-dark tabular-nums tracking-tighter">0</div>
             </div>
         </div>
 
-        <!-- Описание теста -->
-        <div id="testDetailDescriptionBlock" class="mb-6 p-4 bg-brand-green-container rounded-xl hidden">
-            <p id="testDetailDescription" class="text-gray-700"></p>
-        </div>
-
-        <!-- Фильтры и поиск -->
-        <div class="mb-6 flex gap-4">
-            <div class="flex-1">
-                <input type="text" id="testDetailSearchInput" placeholder="Поиск по студенту..."
-                    class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition">
-            </div>
-            <select id="testDetailFilterStatus"
-                class="select select-bordered h-[46px] rounded-xl px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition bg-white">
-                <option value="all">Все статусы</option>
-                <option value="passed">Сдано</option>
-                <option value="failed">Не сдано</option>
-            </select>
-        </div>
-
-        <!-- Таблица результатов -->
-        <div class="overflow-x-auto">
-            <table class="table w-full">
-                <thead>
-                    <tr class="border-b-2 border-brand-green-container">
-                        <th class="text-left p-4">Студент</th>
-                        <th class="text-left p-4">Группа</th>
-                        <th class="text-center p-4">Результат</th>
-                        <th class="text-center p-4">Процент</th>
-                        <th class="text-center p-4">Время</th>
-                        <th class="text-center p-4">Дата прохождения</th>
-                    </tr>
-                </thead>
-                <tbody id="testDetailTableBody">
-                    <!-- Результаты будут добавлены через JavaScript -->
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Пустое состояние для фильтрации -->
-        <div id="testDetailNoResults" class="text-center py-12 hidden">
-            <div class="w-20 h-20 bg-brand-green-container rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-brand-green-light" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        <!-- Описание теста (если есть) -->
+        <div id="testDetailDescriptionBlock"
+            class="mb-10 p-6 bg-gray-50 border border-gray-100 rounded-[1.5rem] hidden relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-[0.03]">
+                <svg class="w-20 h-20" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" />
                 </svg>
             </div>
-            <p class="text-gray-500 text-lg mb-2">Ничего не найдено</p>
-            <p class="text-gray-400 text-sm">Попробуйте изменить параметры поиска</p>
+            <p id="testDetailDescription"
+                class="text-sm text-gray-500 font-medium leading-relaxed italic relative z-10"></p>
+        </div>
+
+        <!-- Секция управления: Поиск и Фильтры -->
+        <div class="flex flex-col md:flex-row gap-4 mb-8">
+            <div class="relative flex-1 group">
+                <div
+                    class="absolute inset-y-0 left-5 flex items-center pointer-events-none text-gray-300 group-focus-within:text-brand-green transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input type="text" id="testDetailSearchInput" placeholder="Поиск по ФИО студента..."
+                    class="w-full pl-14 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:bg-white transition-all font-bold text-gray-800 placeholder:text-gray-300 shadow-sm">
+            </div>
+
+            <div class="relative min-w-[200px]">
+                <select id="testDetailFilterStatus"
+                    class="select select-bordered w-full h-[58px] rounded-2xl px-6 border border-gray-100 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-green focus:bg-white transition-all font-black text-[10px] uppercase tracking-widest text-gray-500">
+                    <option value="all">Все результаты</option>
+                    <option value="passed">Успешно сдали</option>
+                    <option value="failed">Не прошли порог</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Таблица результатов (Обновленный UI) -->
+        <div class="overflow-hidden border border-gray-100 rounded-[2rem] shadow-sm">
+            <div class="overflow-x-auto shadow-inner">
+                <table class="table w-full border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50/50 border-b border-gray-100">
+                            <th
+                                class="text-left px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+                                Студент</th>
+                            <th
+                                class="text-left px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+                                Группа</th>
+                            <th
+                                class="text-center px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+                                Верно</th>
+                            <th
+                                class="text-center px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+                                Процент</th>
+                            <th
+                                class="text-center px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+                                Время</th>
+                            <th
+                                class="text-right px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+                                Завершено</th>
+                        </tr>
+                    </thead>
+                    <tbody id="testDetailTableBody" class="divide-y divide-gray-50">
+                        <!-- Сюда JS вставляет строки <tr> -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Пустое состояние для поиска (Empty State) -->
+        <div id="testDetailNoResults"
+            class="hidden flex flex-col items-center justify-center py-20 bg-gray-50/50 rounded-[2rem] border-2 border-dashed border-gray-200 mt-8">
+            <div class="w-20 h-20 bg-white rounded-3xl shadow-lg flex items-center justify-center text-4xl mb-6">🕵️‍♂️
+            </div>
+            <h3 class="text-xl font-black text-gray-800 mb-2">Данные не найдены</h3>
+            <p class="text-gray-400 font-medium text-center max-w-xs uppercase text-[10px] tracking-widest">Попробуйте
+                изменить запрос или фильтры</p>
         </div>
     </div>
 </div>

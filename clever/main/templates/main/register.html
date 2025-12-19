@@ -1,146 +1,151 @@
 {% extends 'main/base.html' %}
+{% load static %}
 
-{% block title %}Регистрация{% endblock %}
+{% block title %}Регистрация | Clever{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-green-dark to-brand-green p-4">
-    <div class="w-full max-w-md">
-        <!-- Карточка формы -->
-        <div class="bg-white rounded-2xl shadow-2xl p-8">
-            <!-- Заголовок -->
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-brand-green-dark mb-2">Clever</h2>
-                <p class="text-gray-600">Создайте новый аккаунт</p>
-            </div>
+<div class="min-h-screen flex items-center justify-center bg-[#f8faf9] p-6 relative overflow-hidden">
 
-            <!-- Форма -->
-            <form method="post" class="space-y-5">
+    <!-- Декоративные размытые фоны (фирменный стиль) -->
+    <div class="absolute -top-24 -right-24 w-96 h-96 bg-brand-green/5 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-brand-green/10 rounded-full blur-3xl"></div>
+
+    <div class="w-full max-w-[550px] relative z-10 py-10">
+
+        <!-- Логотип и заголовок -->
+        <div class="flex flex-col items-center mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
+            <div
+                class="w-16 h-16 bg-white rounded-[1.2rem] shadow-xl border border-gray-100 flex items-center justify-center mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-brand-green" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+            </div>
+            <h1 class="text-3xl font-black text-brand-green-dark tracking-tighter uppercase">Создание аккаунта</h1>
+            <p class="text-gray-400 font-bold text-[10px] uppercase tracking-[0.3em] mt-2 text-center px-4">
+                Присоединяйтесь к образовательной среде Clever</p>
+        </div>
+
+        <!-- Основная карточка формы -->
+        <div
+            class="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/60 border border-gray-100 p-8 md:p-12 animate-in fade-in zoom-in-95 duration-500">
+
+            <form method="post" class="space-y-6">
                 {% csrf_token %}
 
-                <!-- Email -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Email</span>
-                    </label>
-                    <input type="email" name="email" placeholder="example@email.com"
-                        class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition"
-                        required />
-                    {% if form.email.errors %}
-                    <label class="label">
-                        <span class="label-text-alt text-error">{{ form.email.errors.0 }}</span>
-                    </label>
-                    {% endif %}
+                <!-- Сетка для основных данных (2 колонки на десктопе) -->
+                <div class="grid grid-cols-1 gap-6">
+                    <!-- Email -->
+                    <div class="form-control">
+                        <label
+                            class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Электронная
+                            почта</label>
+                        <input type="email" name="email" placeholder="example@mail.com"
+                            class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:bg-white transition-all font-bold text-gray-800 placeholder:text-gray-300 shadow-sm"
+                            required />
+                    </div>
+
+                    <!-- ФИО -->
+                    <div class="form-control">
+                        <label
+                            class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Полное
+                            имя (ФИО)</label>
+                        <input type="text" name="username" placeholder="Иванов Иван Иванович"
+                            class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:bg-white transition-all font-bold text-gray-800 placeholder:text-gray-300 shadow-sm"
+                            required />
+                    </div>
                 </div>
 
-                <!-- ФИО -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">ФИО</span>
-                    </label>
-                    <input type="text" name="username" placeholder="Иванов Иван Иванович"
-                        class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition"
-                        required />
-                    {% if form.username.errors %}
-                    <label class="label">
-                        <span class="label-text-alt text-error">{{ form.username.errors.0 }}</span>
-                    </label>
-                    {% endif %}
+                <!-- Пароли (в ряд) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label
+                            class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Пароль</label>
+                        <input type="password" name="password" placeholder="••••••••"
+                            class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:bg-white transition-all font-bold text-gray-800 placeholder:text-gray-300 shadow-sm"
+                            required />
+                    </div>
+                    <div class="form-control">
+                        <label
+                            class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Повтор</label>
+                        <input type="password" name="password_confirm" placeholder="••••••••"
+                            class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:bg-white transition-all font-bold text-gray-800 placeholder:text-gray-300 shadow-sm"
+                            required />
+                    </div>
                 </div>
 
-                <!-- Пароль -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Пароль</span>
-                    </label>
-                    <input type="password" name="password" placeholder="Введите пароль"
-                        class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition"
-                        required />
-                    {% if form.password.errors %}
-                    <label class="label">
-                        <span class="label-text-alt text-error">{{ form.password.errors.0 }}</span>
-                    </label>
-                    {% endif %}
+                <div class="h-px bg-gray-100 w-full my-8"></div>
+
+                <!-- Роль и Группа -->
+                <div class="flex flex-col gap-5">
+                    <!-- Роль -->
+                    <div class="form-control w-full">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                            Тип аккаунта
+                        </label>
+                        <div class="relative">
+                            <select name="role" id="roleSelect"
+                                class="select select-bordered w-full min-h-[56px] bg-gray-50 border-gray-100 rounded-2xl px-5 focus:outline-none focus:ring-2 focus:ring-brand-green focus:bg-white transition-all font-black text-[11px] uppercase tracking-widest text-gray-600 shadow-sm appearance-none"
+                                required>
+                                <option value="" disabled selected>Кто вы?</option>
+                                {% for value, label in form.role.field.choices %}
+                                <option value="{{ value }}">{{ label|upper }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Группа (динамическая секция) -->
+                    <!-- Добавлен mt-2 для гарантированного отступа -->
+                    <div class="form-control w-full hidden animate-in slide-in-from-top-2 duration-300"
+                        id="groupContainer">
+                        <label
+                            class="block text-[10px] font-black text-brand-green uppercase tracking-widest mb-2 ml-1">
+                            Ваша учебная группа
+                        </label>
+                        <div class="relative">
+                            <select name="group" id="groupInput"
+                                class="select select-bordered w-full min-h-[56px] bg-brand-green/5 border-brand-green/10 rounded-2xl px-5 focus:outline-none focus:ring-2 focus:ring-brand-green focus:bg-white transition-all font-black text-[11px] uppercase tracking-widest text-brand-green-dark appearance-none">
+                                <option value="" disabled selected>Выберите из списка...</option>
+                                {% for g in groups %}
+                                <option value="{{ g.id }}">{{ g.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Подтверждение пароля -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Подтверждение пароля</span>
-                    </label>
-                    <input type="password" name="password_confirm" placeholder="Повторите пароль"
-                        class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition"
-                        required />
-                    {% if form.password_confirm.errors %}
-                    <label class="label">
-                        <span class="label-text-alt text-error">{{ form.password_confirm.errors.0 }}</span>
-                    </label>
-                    {% endif %}
-                </div>
-
-                <!-- Роль -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Роль</span>
-                    </label>
-                    <br>
-                    <select name="role" id="roleSelect"
-                        class="select select-bordered h-[46px] w-full rounded-xl px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition bg-white"
-                        required>
-                        <option value="">Выберите роль</option>
-                        {% for value, label in form.role.field.choices %}
-                        <option value="{{ value }}">{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                    {% if form.role.errors %}
-                    <label class="label">
-                        <span class="label-text-alt text-error">{{ form.role.errors.0 }}</span>
-                    </label>
-                    {% endif %}
-                </div>
-
-                <!-- Группа (только для студентов) -->
-                <div class="form-control hidden" id="groupContainer">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Группа</span>
-                    </label>
-                    <br>
-                    <select name="group" id="groupInput"
-                        class="select select-bordered h-[46px] w-full rounded-xl px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition bg-white">
-                        <option value="">Выберите группу</option>
-                        {% for g in groups %}
-                        <option value="{{ g.id }}">{{ g.name }}</option>
-                        {% endfor %}
-                    </select>
-                    {% if form.group.errors %}
-                    <label class="label">
-                        <span class="label-text-alt text-error">{{ form.group.errors.0 }}</span>
-                    </label>
-                    {% endif %}
-                </div>
-
-                <!-- Общие ошибки формы -->
-                {% if form.non_field_errors %}
-                <div class="alert alert-error">
+                <!-- Ошибки -->
+                {% if form.errors or form.non_field_errors %}
+                <div
+                    class="p-4 bg-red-50 border border-red-100 rounded-2xl text-[10px] font-bold text-red-600 uppercase tracking-tight leading-relaxed">
+                    {% for field, errors in form.errors.items %}
+                    {{ field }}: {{ errors.0 }}<br>
+                    {% endfor %}
                     {{ form.non_field_errors.0 }}
                 </div>
                 {% endif %}
 
                 <!-- Кнопка отправки -->
-                <div class="form-control mt-6">
+                <div class="pt-6">
                     <button type="submit"
-                        class="w-full bg-brand-green hover:bg-brand-green-hover text-white font-semibold py-3 px-4 rounded-xl transition shadow-sm hover:shadow-md flex items-center justify-center gap-2"
-                        style="background-color: #1B7D4A;">
-                        Зарегистрироваться
+                        class="w-full bg-brand-green hover:bg-brand-green-hover text-white font-black py-5 px-8 rounded-2xl transition-all shadow-xl shadow-brand-green/20 active:scale-95 flex items-center justify-center gap-3 text-xs tracking-[0.2em] uppercase">
+                        <span>ЗАРЕГИСТРИРОВАТЬСЯ</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+                        </svg>
                     </button>
                 </div>
             </form>
 
-            <!-- Ссылка на вход -->
-            <div class="text-center mt-6">
-                <p class="text-gray-600">
-                    Уже есть аккаунт?
-                    <a href="{% url 'main:login' %}" class="font-medium hover:underline" style="color: #1B7D4A;">
-                        Войти
+            <div class="text-center mt-10">
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                    Уже в системе?
+                    <a href="{% url 'main:login' %}"
+                        class="text-brand-green hover:text-brand-green-dark transition-colors ml-1">
+                        Войти в профиль
                     </a>
                 </p>
             </div>
@@ -149,18 +154,21 @@
 </div>
 
 <script>
-    // Показывать/скрывать поле "Группа" в зависимости от выбранной роли
+    // Плавное появление поля "Группа"
     document.getElementById('roleSelect').addEventListener('change', function () {
         const groupContainer = document.getElementById('groupContainer');
         const groupInput = document.getElementById('groupInput');
 
         if (this.value === 'student') {
             groupContainer.classList.remove('hidden');
+            // Добавляем flex чтобы контейнер правильно занял место
+            groupContainer.classList.add('block');
             groupInput.required = true;
         } else {
             groupContainer.classList.add('hidden');
+            groupContainer.classList.remove('block');
             groupInput.required = false;
-            groupInput.value = ''; // Очищаем поле при скрытии
+            groupInput.value = '';
         }
     });
 </script>

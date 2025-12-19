@@ -113,6 +113,17 @@ def teacher_home(request):
         },
     )
 
+@login_required
+@require_http_methods(["POST"])
+def delete_group(request, group_id):
+    if request.user.profile.role != 'teacher':
+        return redirect('main:home')
+    
+    # Ищем группу, созданную именно этим учителем
+    group = get_object_or_404(Group, id=group_id, created_by=request.user)
+    group.delete()
+    
+    return redirect('main:teacher_home')
 
 @login_required
 def test_levels(request, test_id):
@@ -192,13 +203,23 @@ def create_test(request):
         return redirect("main:home")
 
     if request.method == "POST":
-        group_ids = request.POST.getlist("group_ids")
+        raw_group_ids = request.POST.get("group_ids", "")
+        
+        # 2. Превращаем её в настоящий список [1, 3, 5]
+        if raw_group_ids:
+            # Разбиваем по запятой и преобразуем в числа, убирая пустые значения
+            group_ids = [int(g_id) for g_id in raw_group_ids.split(",") if g_id.strip()]
+        else:
+            group_ids = []
 
+        # 3. Создаем тест
         test = Test.objects.create(
             created_by=request.user,
             title=request.POST.get("test_title"),
             description=request.POST.get("test_description") or "",
         )
+        
+        # 4. Теперь передаем чистый список ID
         test.groups.set(group_ids)
 
         # Собираем только настоящие поля "текст вопроса": question_1_text, question_2_text ...
@@ -293,7 +314,7 @@ def test_detail_results(request, test_id):
         {
             "test_title": test.title,
             "test_description": test.description,
-            "group_name": test.group.name,
+            "group_name": test.groups.name,
             "questions_count": test.questions.count(),
             "created_at": test.created_at.strftime("%d.%m.%Y"),
             "results": results_data,
@@ -494,6 +515,9 @@ def submit_test(request, test_id):
     test_result.score = correct_count
     test_result.total_questions = total_count
     test_result.save()
+
+    percentage = (correct_count / total_count * 100) if total_count > 0 else 0
+    level = get_student_level(test, percentage)
 
     return JsonResponse(
         {

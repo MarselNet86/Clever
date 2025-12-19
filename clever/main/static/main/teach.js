@@ -64,94 +64,113 @@ document.getElementById('addQuestionBtn').addEventListener('click', function () 
 
     questionCounter++;
     const questionHTML = `
-            <div class="question-block border border-gray-300 rounded-xl p-6 relative" data-question="${questionCounter}">
-                <!-- Кнопка удаления вопроса -->
-                <button type="button" class="btn btn-circle btn-sm rounded-xl absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white border-none"
-                    onclick="removeQuestion(${questionCounter})">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+        <div class="question-block group relative bg-gray-50/30 border border-gray-100 rounded-[2rem] p-6 md:p-8 transition-all hover:bg-white hover:shadow-2xl hover:shadow-gray-200/50" data-question="${questionCounter}">
+            
+            <!-- Action: Удаление вопроса (вынесено за пределы для чистоты) -->
+            <button type="button" 
+                class="absolute -top-3 -right-3 w-10 h-10 bg-white shadow-lg rounded-xl flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-95 border border-gray-100 z-10"
+                onclick="removeQuestion(${questionCounter})">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
 
-                <h4 class="text-lg font-bold text-brand-green-dark mb-4 question-title">Вопрос ${questionCounter}</h4>
-
-                <!-- Текст вопроса -->
-                <div class="form-control mb-4">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Текст вопроса</span>
-                    </label>
-                    <textarea name="question_${questionCounter}_text" placeholder="Введите текст вопроса"
-                        class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition resize-none"
-                        rows="2" required></textarea>
-                </div>
-
-                <!-- Картинка (необязательно) -->
-                <div class="form-control mb-4">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Картинка (необязательно)</span>
-                    </label>
-                    <input type="file" name="question_${questionCounter}_image" accept="image/*"
-                        class="file-input file-input-bordered border border-gray-300 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-brand-green" />
-                </div>
-
-                <!-- Тип вопроса -->
-                <div class="flex gap-4 items-center mb-3">
-                    <span class="text-sm font-medium text-gray-700">Тип вопроса:</span>
-
-                    <select name="question_${questionCounter}_type"
-                            class="question-type select select-bordered border border-gray-300 rounded-xl flex-1 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
-                            data-question-num="${questionCounter}">
-                        <option value="choice">Тестовый вопрос</option>
-                        <option value="open">Открытый вопрос</option>
-                    </select>
-                </div>
-
-
-                <!-- Варианты ответов (только для тестовых вопросов) -->
-                <div class="answers-container mb-4">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Варианты ответов (макс. 5)</span>
-                    </label>
-                    <div class="space-y-2" id="answers_${questionCounter}">
-                        ${generateAnswerInputs(questionCounter, 4)}
+            <!-- Header: Номер и Тип -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-brand-green text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-lg shadow-brand-green/20">
+                        ${questionCounter}
                     </div>
-                    <button type="button" class="btn btn-sm rounded-xl bg-brand-green-light hover:bg-brand-green text-white border-none mt-2 p-2"
-                        onclick="addAnswer(${questionCounter})" id="addAnswerBtn_${questionCounter}">
-                        Добавить вариант
-                    </button>
+                    <h4 class="text-xl font-black text-gray-800 tracking-tight">Настройка вопроса</h4>
                 </div>
 
-                <!-- Правильный ответ (СЕЛЕКТ - только для тестовых вопросов) -->
-                <div class="correct-answer-select-container form-control">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Правильный ответ</span>
-                    </label>
-                    <select name="question_${questionCounter}_correct" 
-                        class="select select-bordered h-[46px] rounded-xl px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition bg-white w-full"
-                        required id="correctSelect_${questionCounter}">
-                        <option value="">Выберите правильный ответ</option>
-                        <option value="1">Вариант 1</option>
-                        <option value="2">Вариант 2</option>
-                        <option value="3">Вариант 3</option>
-                        <option value="4">Вариант 4</option>
+                <!-- Селектор типа с улучшенным стилем -->
+                <div class="flex items-center gap-3 bg-white p-1.5 rounded-2xl border border-gray-100 shadow-sm">
+                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-3">Тип задания:</span>
+                    <select name="question_${questionCounter}_type"
+                            class="question-type select select-sm bg-gray-50 border-none rounded-xl font-bold text-gray-700 focus:ring-0 h-10 px-4"
+                            data-question-num="${questionCounter}">
+                        <option value="choice">Тестовый (Выбор)</option>
+                        <option value="open">Открытый (Текст)</option>
                     </select>
                 </div>
+            </div>
 
-                <!-- Правильный ответ (ТЕКСТ - только для открытых вопросов) -->
-                <div class="correct-answer-text-container form-control hidden">
-                    <label class="label">
-                        <span class="label-text font-medium text-gray-700">Правильный ответ (текст)</span>
-                    </label>
-                    <input type="text" name="question_${questionCounter}_correct_text" 
-                        placeholder="Например: Синхрофазотрон"
-                        class="input input-bordered border border-gray-300 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
-                        id="correctText_${questionCounter}" />
-                    <p class="text-xs text-gray-500 mt-1">Ответ не чувствителен к регистру (ученик может писать как строчными, так и заглавными)</p>
+            <!-- Сетка: Контент vs Логика -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <!-- Левая колонка: Что видит ученик -->
+                <div class="space-y-6">
+                    <div class="form-control">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Текст вопроса</label>
+                        <textarea name="question_${questionCounter}_text" 
+                            placeholder="Напишите условие задачи или сам вопрос..."
+                            class="w-full px-5 py-4 bg-white border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all font-medium text-gray-700 placeholder:text-gray-300 resize-none"
+                            rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Медиафайл (изображение)</label>
+                        <div class="relative group/file">
+                            <input type="file" name="question_${questionCounter}_image" accept="image/*"
+                                class="file-input w-full bg-white border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green text-xs font-bold text-gray-500" />
+                        </div>
+                    </div>
                 </div>
 
-                <input type="hidden" name="question_${questionCounter}_answers_count" value="4" id="answersCount_${questionCounter}">
+                <!-- Правая колонка: Как система проверяет -->
+                <div class="space-y-6">
+                    
+                    <!-- Контейнер вариантов (для Choice) -->
+                    <div class="answers-container" id="choice_logic_${questionCounter}">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Варианты ответов</label>
+                        <div class="space-y-3" id="answers_${questionCounter}">
+                            ${generateAnswerInputs(questionCounter, 4)}
+                        </div>
+                        
+                        <button type="button" 
+                            class="mt-4 flex items-center gap-2 text-[10px] font-black text-brand-green hover:text-brand-green-hover transition-colors px-1"
+                            onclick="addAnswer(${questionCounter})" id="addAnswerBtn_${questionCounter}">
+                            <div class="w-5 h-5 bg-brand-green/10 rounded-lg flex items-center justify-center">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/></svg>
+                            </div>
+                            ДОБАВИТЬ ВАРИАНТ
+                        </button>
+                    </div>
+
+                    <!-- Секция правильного ответа (Выделена цветом) -->
+                    <div class="p-6 bg-brand-green/5 border border-brand-green/10 rounded-[1.5rem]">
+                        
+                        <!-- Селект для Choice -->
+                        <div class="correct-answer-select-container">
+                            <label class="block text-[10px] font-black text-brand-green uppercase tracking-widest mb-3">Правильный вариант</label>
+                            <select name="question_${questionCounter}_correct" 
+                                class="select w-full bg-white border border-gray-100 rounded-xl font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-green transition-all"
+                                required id="correctSelect_${questionCounter}">
+                                <option value="">Укажите верный номер</option>
+                                <option value="1">Вариант 1</option>
+                                <option value="2">Вариант 2</option>
+                                <option value="3">Вариант 3</option>
+                                <option value="4">Вариант 4</option>
+                            </select>
+                        </div>
+
+                        <!-- Поле для Open -->
+                        <div class="correct-answer-text-container hidden">
+                            <label class="block text-[10px] font-black text-brand-green uppercase tracking-widest mb-3">Ожидаемое слово/фраза</label>
+                            <input type="text" name="question_${questionCounter}_correct_text" 
+                                placeholder="Напр: Фотосинтез"
+                                class="w-full px-5 py-4 bg-white border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green transition-all font-bold text-gray-800 placeholder:text-gray-300"
+                                id="correctText_${questionCounter}" />
+                            <p class="text-[9px] font-bold text-brand-green/60 mt-2 uppercase">Проверка не чувствительна к регистру</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-        `;
+
+            <input type="hidden" name="question_${questionCounter}_answers_count" value="4" id="answersCount_${questionCounter}">
+        </div>
+    `;
     document.getElementById('questionsContainer').insertAdjacentHTML('beforeend', questionHTML);
 
     // Находим только что добавленный блок
@@ -230,18 +249,29 @@ function generateAnswerInputs(questionNum, count) {
     let html = '';
     for (let i = 1; i <= count; i++) {
         html += `
-                <div class="flex gap-2 items-center answer-row" data-answer="${i}">
-                    <span class="text-gray-600 font-medium w-24">Вариант ${i}:</span>
-                    <input type="text" name="question_${questionNum}_answer_${i}" placeholder="Введите вариант ответа"
-                        class="input input-bordered border border-gray-300 rounded-xl flex-1 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2" />
-                    <button type="button" class="btn btn-circle btn-sm rounded-xl bg-red-500 hover:bg-red-600 text-white border-none"
-                        onclick="removeAnswer(${questionNum}, ${i})">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-            `;
+            <div class="flex gap-3 items-center answer-row group/answer animate-in fade-in slide-in-from-left-2" data-answer="${i}">
+                <!-- Метка варианта в стиле микро-капс -->
+                <span class="text-[10px] font-black text-gray-400 uppercase w-20 tracking-widest shrink-0 ml-1">
+                    Вариант ${i}
+                </span>
+                
+                <!-- Улучшенное поле ввода -->
+                <input type="text" name="question_${questionNum}_answer_${i}" 
+                    placeholder="Введите текст ответа..."
+                    class="flex-1 px-5 py-3 bg-white border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:bg-white transition-all font-medium text-gray-700 placeholder:text-gray-200 shadow-sm" 
+                    required />
+                
+                <!-- Мягко-красная кнопка удаления -->
+                <button type="button" 
+                    class="w-10 h-10 bg-red-50 hover:bg-red-600 text-red-400 hover:text-white rounded-xl flex items-center justify-center transition-all active:scale-90 border border-red-100 shrink-0 shadow-sm"
+                    onclick="removeAnswer(${questionNum}, ${i})"
+                    title="Удалить вариант">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        `;
     }
     return html;
 }
@@ -264,19 +294,29 @@ function addAnswer(questionNum) {
     const isChoice = questionBlock.querySelector('.question-type').value === 'choice';
 
     const newAnswer = `
-            <div class="flex gap-2 items-center answer-row" data-answer="${currentCount}">
-                <span class="text-gray-600 font-medium w-24">Вариант ${currentCount}:</span>
-                <input type="text" name="question_${questionNum}_answer_${currentCount}" placeholder="Введите вариант ответа"
-                    class="input input-bordered border border-gray-300 rounded-xl flex-1 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent p-2"
-                    ${isChoice ? 'required' : 'disabled'} />
-                <button type="button" class="btn btn-circle btn-sm rounded-xl bg-red-500 hover:bg-red-600 text-white border-none"
-                    onclick="removeAnswer(${questionNum}, ${currentCount})">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-        `;
+        <div class="flex gap-3 items-center answer-row group/answer animate-in fade-in slide-in-from-left-2 duration-300" data-answer="${currentCount}">
+            <!-- Метка варианта: микро-капс -->
+            <span class="text-[10px] font-black text-gray-400 uppercase w-20 tracking-widest shrink-0 ml-1">
+                Вариант ${currentCount}
+            </span>
+            
+            <!-- Поле ввода: shadow-sm и мягкие границы -->
+            <input type="text" name="question_${questionNum}_answer_${currentCount}" 
+                placeholder="Введите текст ответа..."
+                class="flex-1 px-5 py-3 bg-white border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green focus:bg-white transition-all font-medium text-gray-700 placeholder:text-gray-200 shadow-sm disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                ${isChoice ? 'required' : 'disabled'} />
+            
+            <!-- Кнопка удаления: мягко-красная (ваша новая база) -->
+            <button type="button" 
+                class="w-10 h-10 bg-red-50 hover:bg-red-600 text-red-400 hover:text-white rounded-xl flex items-center justify-center transition-all active:scale-90 border border-red-100 shrink-0 shadow-sm"
+                onclick="removeAnswer(${questionNum}, ${currentCount})"
+                title="Удалить вариант">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    `;
     container.insertAdjacentHTML('beforeend', newAnswer);
     countInput.value = currentCount;
 
