@@ -268,28 +268,76 @@
             wrapper.style.gridTemplateRows = "0fr";
         } else {
             wrapper.style.gridTemplateRows = "1fr";
+            // При открытии привязываем обработчики именно к этой форме
             bindLevelRanges(wrapper);
         }
     }
 
-    function bindLevelRanges(root = document) {
-        const ranges = root.querySelectorAll('input[type="range"][data-range-level]');
-        ranges.forEach(range => {
-            const level = range.dataset.rangeLevel;
+    function bindLevelRanges(root) {
+        if (!root) return;
 
-            const maxLabel = root.querySelector(`[data-max-label="${level}"]`);
-            const valueLabel = root.querySelector(`[data-range-value="${level}"]`);
+        const range1 = root.querySelector('input[data-range-level="1"]');
+        const range2 = root.querySelector('input[data-range-level="2"]');
+        
+        // Элементы отображения текста
+        const labels = {
+            min2: root.querySelector('[data-min-label="2"]'),
+            min3: root.querySelector('[data-min-label="3"]'),
+            val1: root.querySelector('[data-range-value="1"]'),
+            val2: root.querySelector('[data-range-value="2"]'),
+            max1: root.querySelector('[data-max-label="1"]'),
+            max2: root.querySelector('[data-max-label="2"]')
+        };
 
-            const sync = () => {
-                const v = range.value;
-                if (maxLabel) maxLabel.textContent = v;
-                if (valueLabel) valueLabel.textContent = v;
-            };
+        function updateValues(triggeredBy) {
+            let v1 = parseInt(range1.value);
+            let v2 = parseInt(range2.value);
 
-            range.addEventListener('input', sync);
-            sync();
-        });
+            // Логика ограничений
+            if (triggeredBy === 1) {
+                // Если двигаем первый ползунок
+                if (v1 >= 99) v1 = 98; // оставляем место для 2 и 3 уровней
+                if (v1 >= v2) {
+                    v2 = v1 + 1; // толкаем второй вперед
+                }
+            } else if (triggeredBy === 2) {
+                // Если двигаем второй ползунок
+                if (v2 <= 1) v2 = 2; // оставляем место для 1 уровня
+                if (v2 >= 100) v2 = 99; // оставляем место для 3 уровня (он всегда 100)
+                if (v2 <= v1) {
+                    v1 = v2 - 1; // толкаем первый назад
+                }
+            }
+
+            // Синхронизируем значения ползунков с логикой
+            range1.value = v1;
+            range2.value = v2;
+
+            // Обновляем все текстовые метки
+            if (labels.val1) labels.val1.textContent = v1;
+            if (labels.max1) labels.max1.textContent = v1;
+            
+            if (labels.min2) labels.min2.textContent = v1 + 1;
+            if (labels.val2) labels.val2.textContent = v2;
+            if (labels.max2) labels.max2.textContent = v2;
+            
+            if (labels.min3) labels.min3.textContent = v2 + 1;
+        }
+
+        // Слушатели событий
+        range1.oninput = () => updateValues(1);
+        range2.oninput = () => updateValues(2);
+
+        // Инициализация при открытии
+        updateValues(1);
     }
 
-    document.addEventListener('DOMContentLoaded', () => bindLevelRanges());
+    // При загрузке страницы инициализируем только открытые формы (если есть)
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('[id^="levelsForm_"]').forEach(form => {
+            if (form.style.gridTemplateRows === "1fr") {
+                bindLevelRanges(form);
+            }
+        });
+    });
 </script>
