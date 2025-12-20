@@ -14,9 +14,18 @@ services:
       - postgres_data:/var/lib/postgresql 
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
 
   web:
     build: .
+    container_name: clever_web
+    restart: always
     ports:
       - "8000:8000"
     env_file:
@@ -28,12 +37,14 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "python manage.py migrate && gunicorn projectname.wsgi:application --bind 0.0.0.0:8000"
+    command: sh -c "python manage.py migrate && gunicorn clever.wsgi:application --bind 0.0.0.0:8000"
     networks:
       - app-network
 
   nginx:
     image: nginx:latest
+    container_name: clever_nginx
+    restart: always
     ports:
       - "80:80"
       - "443:443"
@@ -54,4 +65,4 @@ volumes:
 
 networks:
   app-network:
-    driver: bridge
+    driver: border
