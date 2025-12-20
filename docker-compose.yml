@@ -27,13 +27,15 @@ services:
       - .env
     volumes:
       - .:/app
-      - static:/app/static
-      - media:/app/media
+      - static:/app/clever/static
+      - media:/app/clever/media
     depends_on:
       - db
-    command: sh -c "python clever/manage.py migrate && python clever/manage.py collectstatic --noinput && gunicorn clever.wsgi:application --bind 0.0.0.0:8000"
+    working_dir: /app/clever
+    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn clever.wsgi:application --bind 0.0.0.0:8000"
     networks:
       - app-network
+
 
   nginx:
     image: nginx:latest
