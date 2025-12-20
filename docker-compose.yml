@@ -37,6 +37,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    # Убедитесь, что 'clever.wsgi' совпадает с названием вашей папки проекта
     command: sh -c "python manage.py migrate && gunicorn clever.wsgi:application --bind 0.0.0.0:8000"
     networks:
       - app-network
@@ -65,4 +66,4 @@ volumes:
 
 networks:
   app-network:
-    driver: border
+    driver: bridge 
