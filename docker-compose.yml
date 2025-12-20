@@ -9,9 +9,9 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - PGDATA=/var/lib/postgresql/data/pgdata 
+      - PGDATA=/var/lib/postgresql/data
     volumes:
-      - postgres_data:/var/lib/postgresql 
+      - postgres_data:/var/lib/postgresql/data 
     ports:
       - "5432:5432"
     healthcheck:
@@ -66,4 +66,4 @@ volumes:
 
 networks:
   app-network:
-    driver: bridge 
+    driver: bridge
