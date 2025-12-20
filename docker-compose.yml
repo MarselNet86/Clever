@@ -2,20 +2,18 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:latest
+    image: postgres:18-alpine 
+    container_name: clever_db
+    restart: always
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PGDATA=/var/lib/postgresql/data/pgdata 
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - app-network
+      - postgres_data:/var/lib/postgresql 
+    ports:
+      - "5432:5432"
 
   web:
     build: .
